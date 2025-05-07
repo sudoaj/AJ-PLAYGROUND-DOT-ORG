@@ -5,6 +5,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import BackgroundAnimation from '@/components/ui/BackgroundAnimation';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,8 +31,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
+        <BackgroundAnimation />
         <Header />
-        <main className="flex-grow container mx-auto px-4 py-8">
+        <main className="flex-grow container mx-auto px-4 py-8 relative z-0"> {/* Ensure main content can be above background animation if needed, though -z-10 on animation should handle it */}
           {children}
         </main>
         <Footer />
