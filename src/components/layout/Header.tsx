@@ -1,8 +1,9 @@
+// src/components/layout/Header.tsx
 'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Download } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ const navLinks = [
 export default function Header() {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -27,16 +29,11 @@ export default function Header() {
       const sectionId = href.substring(2);
       const section = document.getElementById(sectionId);
       if (section) {
-        // Close sheet if on mobile and a scroll link is clicked
-        if (isMobile) {
-          const closeButton = document.querySelector('#radix-\\:R1cqm\\:-trigger-radix-\\:R1cqm\\:-content-0 button[aria-label="Close"]');
-          // A more robust way to close the sheet would be to manage its open state via context or props
-          // For now, this is a simple attempt. A better solution would involve passing setOpen to nav items.
-        }
         section.scrollIntoView({ behavior: 'smooth' });
       }
     }
-    // If not a hash link, Next.js Link component will handle navigation
+    // Close sheet if an item is clicked
+    setIsSheetOpen(false); 
   };
 
   const commonNavItems = (
@@ -67,13 +64,14 @@ export default function Header() {
           <Link href="/" className="text-xl font-bold text-primary">
             AJ-Playground
           </Link>
-          {/* Skeleton for nav items including new Playground link and resume button */}
-          <div className="flex items-center space-x-6">
+          {/* Skeleton for nav items */}
+          <div className="hidden md:flex items-center space-x-6">
             <div className="h-6 w-16 animate-pulse rounded-md bg-muted/50"></div>
             <div className="h-6 w-12 animate-pulse rounded-md bg-muted/50"></div>
             <div className="h-6 w-20 animate-pulse rounded-md bg-muted/50"></div>
             <div className="h-9 w-28 animate-pulse rounded-md bg-muted/50"></div>
           </div>
+          <div className="md:hidden h-8 w-8 animate-pulse rounded-md bg-muted/50"></div>
         </div>
       </header>
     );
@@ -86,7 +84,7 @@ export default function Header() {
           AJ-Playground
         </Link>
         {isMobile ? (
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
@@ -94,18 +92,15 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px] bg-background">
-              <div className="flex flex-col space-y-6 p-6 pt-12">
-                {/* TODO: Implement sheet closing on nav item click for SPA scroll */}
+              <SheetHeader className="p-6 pb-0">
+                <SheetTitle className="text-left text-lg font-semibold">Navigation</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col space-y-6 p-6 pt-4">
                 {navLinks.map((link) => (
                   <Button key={link.href} variant="ghost" asChild className="justify-start">
                     <Link
                       href={link.href}
-                      onClick={(e) => {
-                        scrollToSection(e, link.href);
-                        // Attempt to close sheet, would be better with state management
-                        const trigger = document.querySelector('[aria-controls^="radix-"][aria-expanded="true"]');
-                        if (trigger instanceof HTMLElement) trigger.click();
-                      }}
+                      onClick={(e) => scrollToSection(e, link.href)}
                     >
                       {link.label}
                     </Link>
@@ -129,3 +124,4 @@ export default function Header() {
     </header>
   );
 }
+
