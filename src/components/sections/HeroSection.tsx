@@ -14,21 +14,23 @@ export default function HeroSection() {
       <div className="absolute inset-0 -z-10">
         {/* Placeholder for GIF/video. Replace with actual media. */}
         <Image
-          src="https://picsum.photos/seed/abstractwaves/1920/1080" 
-          alt="Abstract background animation"
-          layout="fill"
-          objectFit="cover"
-          className="opacity-20" // Adjust opacity as needed for visibility
-          data-ai-hint="abstract technology"
+          src="https://picsum.photos/seed/dynamicabstract/1920/1080" 
+          alt="Abstract background"
+          fill
+          className="object-cover"
+          data-ai-hint="dynamic abstract" // Hint for a more dynamic image
           priority // Load this image early as it's part of LCP for this section
         />
+        {/* Dark overlay to ensure text contrast */}
+        <div className="absolute inset-0 bg-background/70"></div> 
+        
         {/* Example for a video background (ensure video is optimized):
         <video 
           autoPlay 
           loop 
           muted 
           playsInline 
-          className="w-full h-full object-cover opacity-20"
+          className="w-full h-full object-cover" // Removed opacity from here, control with overlay
           poster="https://picsum.photos/seed/abstractwaves/1920/1080" // Poster image
         >
           <source src="/videos/hero-background.mp4" type="video/mp4" />
@@ -58,3 +60,4 @@ export default function HeroSection() {
     </section>
   );
 }
+
