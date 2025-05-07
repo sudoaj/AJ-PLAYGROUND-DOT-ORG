@@ -29,12 +29,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      {/*
-        The Metadata API automatically populates the <head> tag.
-        The <html> tag should only contain <head> (implicitly via Metadata)
-        and <body> as direct children. Ensure no extra whitespace or comments
-        are rendered as text nodes between <html> and <body>.
-      */}
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
