@@ -1,6 +1,8 @@
 import { getGitHubRepos, type GitHubRepo } from '@/services/github';
 import ProjectCard from '@/components/ui/ProjectCard';
-import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 // Sample project data for demonstration, matching GitHubRepo structure
 const sampleProjects: GitHubRepo[] = [
@@ -42,6 +44,10 @@ export default async function ProjectsSection() {
   // const projects = await getGitHubRepos('yourusername'); // Replace 'yourusername'
   const projects = sampleProjects; // Using sample data for now
 
+  // Display a subset of projects for the homepage section
+  const displayedProjects = projects.slice(0, 3);
+
+
   return (
     <section id="projects" className="py-16 md:py-24 bg-background/90 scroll-mt-20">
       <div className="container mx-auto px-4">
@@ -51,14 +57,24 @@ export default async function ProjectsSection() {
         <p className="text-lg text-muted-foreground mb-12 text-center max-w-2xl mx-auto">
           Here are some of the projects I&apos;ve been working on. Explore my GitHub for more.
         </p>
-        {projects.length > 0 ? (
+        {displayedProjects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {projects.map((project) => (
+            {displayedProjects.map((project) => (
               <ProjectCard key={project.name} project={project} />
             ))}
           </div>
         ) : (
           <p className="text-center text-muted-foreground">No projects to display at the moment.</p>
+        )}
+        {projects.length > 3 && (
+          <div className="mt-12 text-center">
+            <Button asChild variant="outline" size="lg">
+              <Link href="/projects">
+                View All Projects
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
     </section>
