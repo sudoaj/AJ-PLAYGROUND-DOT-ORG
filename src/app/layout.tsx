@@ -33,7 +33,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
         <BackgroundAnimation />
         <Header />
-        <main className="flex-grow container mx-auto px-4 py-8 relative z-0"> {/* Ensure main content can be above background animation if needed, though -z-10 on animation should handle it */}
+        <main className="flex-grow relative z-0 w-full"> {/* Removed container classes, added w-full for clarity */}
           {children}
         </main>
         <Footer />
@@ -42,3 +42,4 @@ export default function RootLayout({
     </html>
   );
 }
+

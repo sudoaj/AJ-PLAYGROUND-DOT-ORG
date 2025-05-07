@@ -8,12 +8,15 @@ import { Separator } from '@/components/ui/separator';
 export default function Home() {
   return (
     <>
-      <HeroSection />
-      <ProjectsSection />
-      <Separator className="my-12 md:my-16 bg-border/20" />
-      <BlogSection />
-      <Separator className="my-12 md:my-16 bg-border/20" />
-      <PlaygroundSection />
+      <HeroSection /> {/* This will now be full-width */}
+      {/* Apply container to subsequent sections */}
+      <div className="container mx-auto px-4 py-8">
+        <ProjectsSection />
+        <Separator className="my-12 md:my-16 bg-border/20" />
+        <BlogSection />
+        <Separator className="my-12 md:my-16 bg-border/20" />
+        <PlaygroundSection />
+      </div>
     </>
   );
 }

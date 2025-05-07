@@ -8,7 +8,7 @@ export default function HeroSection() {
   return (
     <section 
       id="hero" 
-      className="min-h-screen flex flex-col items-center justify-center text-center relative overflow-hidden py-16 md:py-24 px-4"
+      className="min-h-screen flex flex-col items-center justify-center text-center relative overflow-hidden py-16 md:py-24 w-full" // Removed px-4, added w-full
     >
       {/* Background Media Container */}
       <div className="absolute inset-0 -z-10">
@@ -40,7 +40,7 @@ export default function HeroSection() {
       </div>
 
       {/* Jumbotron Text Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 px-4"> {/* Added px-4 here to keep text content padded within the full-width section */}
         <h2 className="text-2xl md:text-3xl font-light text-foreground/80 mb-2">
           HI, I&apos;M
         </h2>
