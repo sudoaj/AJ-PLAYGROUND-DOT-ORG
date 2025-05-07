@@ -32,6 +32,24 @@ const sampleBlogPosts: BlogPost[] = [
     slug: 'mastering-typescript',
     excerpt: 'Tips and tricks for leveraging TypeScript effectively in large-scale projects to improve code quality and maintainability.',
   },
+  {
+    id: '4',
+    title: 'Deep Dive into Next.js App Router',
+    date: '2024',
+    imageUrl: 'https://picsum.photos/seed/nextjs/400/225',
+    imageHint: 'futuristic interface',
+    slug: 'nextjs-app-router',
+    excerpt: 'A comprehensive guide to understanding and utilizing the Next.js App Router for optimal performance and developer experience.',
+  },
+  {
+    id: '5',
+    title: 'State Management in Modern React',
+    date: '2023',
+    imageUrl: 'https://picsum.photos/seed/statemgmt/400/225',
+    imageHint: 'connected nodes',
+    slug: 'react-state-management',
+    excerpt: 'Comparing various state management solutions in React, from Context API to Zustand and Redux Toolkit.',
+  },
 ];
 
 export default function BlogSection() {
@@ -56,7 +74,7 @@ export default function BlogSection() {
         ) : (
           <p className="text-center text-muted-foreground">No blog posts yet. Stay tuned!</p>
         )}
-        {sampleBlogPosts.length > 3 && (
+        {sampleBlogPosts.length > displayedBlogPosts.length && (
            <div className="mt-12 text-center">
             <Button asChild variant="outline" size="lg">
               <Link href="/blog">
@@ -70,3 +88,4 @@ export default function BlogSection() {
     </section>
   );
 }
+

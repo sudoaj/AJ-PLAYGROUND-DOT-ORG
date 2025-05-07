@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-// Re-using sample data from BlogSection for consistency.
+// Updated sample data to match BlogSection for consistency.
 // In a real app, this would be fetched from a CMS or markdown files.
 const sampleBlogPosts: BlogPost[] = [
   {
@@ -95,3 +95,4 @@ export default function AllBlogPostsPage() {
     </div>
   );
 }
+
