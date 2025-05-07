@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect, FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Bot, User, Loader2, AlertTriangle } from 'lucide-react';
-import { projectQA, ProjectQAInput } from '@/ai/flows/project-qa'; // Assuming this path is correct
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Send, Bot, User, Loader2, AlertTriangle, Sparkles } from 'lucide-react';
+import { projectQA, ProjectQAInput } from '@/ai/flows/project-qa'; 
 
 interface Message {
   id: string;
@@ -16,9 +16,9 @@ interface Message {
 }
 
 const placeholderPrompts = [
-  "How many projects are listed?",
-  "Tell me more about a random project.",
-  "What technologies were used in the Security Logger project?",
+  "List all project names.",
+  "What technologies are used in the AI Chatbot?",
+  "Tell me about the E-commerce Platform.",
 ];
 
 export default function AjGptChat() {
@@ -42,18 +42,27 @@ export default function AjGptChat() {
     }
   }, [messages]);
 
-  const handleSubmit = async (e?: FormEvent<HTMLFormElement>) => {
-    if (e) e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const handleSubmit = async (e?: FormEvent<HTMLFormElement> | string) => {
+    let currentInput = '';
+    if (typeof e === 'string') {
+      currentInput = e;
+    } else if (e) {
+      e.preventDefault();
+      currentInput = input;
+    }
+    
+    if (!currentInput.trim() || isLoading) return;
 
-    const userMessage: Message = { id: Date.now().toString(), text: input, sender: 'user' };
+    const userMessage: Message = { id: Date.now().toString(), text: currentInput, sender: 'user' };
     setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+    if (typeof e !== 'string') {
+      setInput(''); // Clear input only if it was a form submission
+    }
     setIsLoading(true);
     setError(null);
 
     try {
-      const aiInput: ProjectQAInput = { question: userMessage.text, username: 'yourusername' }; // Replace 'yourusername'
+      const aiInput: ProjectQAInput = { question: userMessage.text, username: 'yourusername' }; // Replace 'yourusername' with actual or dynamic username
       const response = await projectQA(aiInput);
       const aiMessage: Message = { id: (Date.now() + 1).toString(), text: response.answer, sender: 'ai' };
       setMessages((prev) => [...prev, aiMessage]);
@@ -61,42 +70,42 @@ export default function AjGptChat() {
       console.error("Error calling AI:", err);
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred.";
       setError(`AI Error: ${errorMessage}`);
-      const aiErrorMessage: Message = { id: (Date.now() + 1).toString(), text: "Sorry, I couldn't process that request.", sender: 'ai' };
+      const aiErrorMessage: Message = { id: (Date.now() + 1).toString(), text: "Sorry, I couldn't process that request. Please try again.", sender: 'ai' };
       setMessages((prev) => [...prev, aiErrorMessage]);
     } finally {
       setIsLoading(false);
+      setCurrentPlaceholder(placeholderPrompts[Math.floor(Math.random() * placeholderPrompts.length)]);
     }
   };
-
-  const handlePlaceholderClick = (promptText: string) => {
-    setInput(promptText);
-    // Optionally, submit directly:
-    // handleSubmit(); // This would require handleSubmit to not need an event or handle it differently
+  
+  const handlePromptButtonClick = (promptText: string) => {
+    setInput(promptText); // Set input field for user to see
+    handleSubmit(promptText); // Submit the prompt directly
   };
 
+
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-2xl">
-      <CardHeader className="border-b">
-        <CardTitle className="flex items-center text-xl">
-          <Bot className="mr-3 h-7 w-7 text-primary" />
-          AJ-GPT: Ask about my projects
+    <Card className="w-full shadow-xl rounded-xl border-border/50">
+      <CardHeader className="border-b border-border/30 p-4">
+        <CardTitle className="flex items-center text-lg">
+          <Bot className="mr-2 h-6 w-6 text-primary" />
+          AJ-GPT Assistant
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[400px] p-4" ref={scrollAreaRef}>
-          {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-              <Bot className="h-12 w-12 mb-4" />
-              <p className="mb-2 text-center">I can answer questions about AJ's projects.</p>
-              <p className="text-sm text-center">Try one of these prompts:</p>
-              <div className="mt-3 space-y-2">
-                {placeholderPrompts.map((prompt, idx) => (
+        <ScrollArea className="h-[300px] md:h-[350px] p-4" ref={scrollAreaRef}>
+          {messages.length === 0 && !isLoading && (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+              <Sparkles className="h-10 w-10 mb-3 text-primary" />
+              <p className="text-sm text-center mb-3">Ask me anything about AJ&apos;s projects!</p>
+              <div className="space-y-2 w-full">
+                {placeholderPrompts.slice(0,2).map((prompt, idx) => (
                   <Button
                     key={idx}
                     variant="outline"
                     size="sm"
-                    className="text-xs"
-                    onClick={() => handlePlaceholderClick(prompt)}
+                    className="w-full text-xs h-auto py-1.5 text-left justify-start"
+                    onClick={() => handlePromptButtonClick(prompt)}
                   >
                     {prompt}
                   </Button>
@@ -107,60 +116,62 @@ export default function AjGptChat() {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex items-start gap-3 my-4 ${msg.sender === 'user' ? 'justify-end' : ''}`}
+              className={`flex items-start gap-2.5 my-3 ${msg.sender === 'user' ? 'justify-end' : ''}`}
             >
               {msg.sender === 'ai' && (
-                <Avatar className="h-8 w-8 border border-primary/50">
-                  <AvatarFallback><Bot className="h-5 w-5 text-primary" /></AvatarFallback>
+                <Avatar className="h-7 w-7 border border-primary/30">
+                  <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
                 </Avatar>
               )}
               <div
-                className={`rounded-lg p-3 max-w-[75%] text-sm break-words ${
+                className={`rounded-lg p-2.5 max-w-[80%] text-xs md:text-sm break-words shadow-sm ${
                   msg.sender === 'user'
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
+                    : 'bg-muted text-foreground'
                 }`}
               >
                 {msg.text}
               </div>
               {msg.sender === 'user' && (
-                 <Avatar className="h-8 w-8 border">
-                  <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
+                 <Avatar className="h-7 w-7 border border-border/30">
+                  <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
                 </Avatar>
               )}
             </div>
           ))}
-          {isLoading && (
-            <div className="flex items-start gap-3 my-4">
-              <Avatar className="h-8 w-8 border border-primary/50">
-                <AvatarFallback><Bot className="h-5 w-5 text-primary" /></AvatarFallback>
+          {isLoading && messages.length > 0 && messages[messages.length -1].sender === 'user' && (
+            <div className="flex items-start gap-2.5 my-3">
+              <Avatar className="h-7 w-7 border border-primary/30">
+                <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
               </Avatar>
-              <div className="rounded-lg p-3 bg-muted">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <div className="rounded-lg p-2.5 bg-muted shadow-sm">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
               </div>
             </div>
           )}
         </ScrollArea>
         {error && (
-          <div className="p-3 border-t bg-destructive/10 text-destructive text-xs flex items-center">
-            <AlertTriangle className="h-4 w-4 mr-2 shrink-0" /> {error}
+          <div className="p-2 border-t border-border/30 bg-destructive/10 text-destructive text-xs flex items-center">
+            <AlertTriangle className="h-3.5 w-3.5 mr-1.5 shrink-0" /> {error}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="border-t p-4 flex items-center gap-2">
-          <Input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={currentPlaceholder || "Ask something..."}
-            className="flex-grow"
-            disabled={isLoading}
-            aria-label="Chat input"
-          />
-          <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
-            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-            <span className="sr-only">Send message</span>
-          </Button>
-        </form>
+        <CardFooter className="border-t border-border/30 p-3">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
+            <Input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={currentPlaceholder || "Ask something..."}
+              className="flex-grow h-9 text-xs md:text-sm"
+              disabled={isLoading}
+              aria-label="Chat input"
+            />
+            <Button type="submit" size="icon" className="h-9 w-9" disabled={isLoading || !input.trim()}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <span className="sr-only">Send message</span>
+            </Button>
+          </form>
+        </CardFooter>
       </CardContent>
     </Card>
   );
