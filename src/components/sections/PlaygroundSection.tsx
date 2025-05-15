@@ -43,7 +43,7 @@ export default function PlaygroundSection() {
         </div>
 
         <div className="mt-12 text-center">
-            <p className="text-muted-foreground">This section is actively being developed. Check back for more interactive fun!</p>
+            <p className="text-muted-foreground">SORRY: This section is actively being developed. Check back for more interactive fun!</p>
         </div>
       </div>
     </section>

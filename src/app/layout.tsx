@@ -33,7 +33,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
         <BackgroundAnimation /> {/* Add BackgroundAnimation here */}
         <Header />
-        <main className="flex-grow relative z-0 w-full"> {/* Removed container classes, added w-full for clarity */}
+        <main className="flex-grow relative z-0 w-full"> 
           {children}
         </main>
         <Footer />

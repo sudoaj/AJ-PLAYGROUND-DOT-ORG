@@ -9,7 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
+todo-kanban.html
 # testing
 /coverage
 

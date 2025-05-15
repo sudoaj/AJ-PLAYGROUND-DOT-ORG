@@ -36,7 +36,7 @@ export default function HeroSection() {
       {/* Jumbotron Text Content */}
       <div className="relative z-10 px-4 flex flex-col items-center">
         <h2 className="text-2xl md:text-3xl font-light text-foreground/80 mb-2 animate-fade-in-down" style={{animationDelay: '0.2s'}}>
-          HI, I&apos;M
+          Hi, I&apos;m
         </h2>
         <h1 
           className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold text-primary mb-4 tracking-tighter animate-fade-in-up"
@@ -58,13 +58,13 @@ export default function HeroSection() {
             onClick={scrollToProjects}
             className="text-lg px-8 py-6 border-2 border-primary/70 hover:bg-primary/10 hover:border-primary transition-all duration-300 group"
           >
-            Explore More
+            Explore
             <ArrowDown className="ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform duration-300" />
           </Button>
         </div>
 
         <p className="text-sm md:text-md text-foreground/60 mt-12 animate-fade-in-up" style={{animationDelay: '1s'}}>
-          Need to ask something about my work? Try my AI assistant!
+          Need to ask something about my work? Try AJ-GPT!
         </p>
       </div>
 

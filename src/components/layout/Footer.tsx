@@ -27,7 +27,6 @@ export default function Footer() {
   const handleNewsletterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Placeholder for newsletter submission logic
-    // In a real app, you'd call an API here.
     alert('Thank you for subscribing! (This is a demo feature)');
     const form = e.target as HTMLFormElement;
     form.reset();
@@ -95,7 +94,7 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4 text-foreground">Connect</h3>
             <div className="flex items-center space-x-2 mb-6">
               <Button variant="ghost" size="icon" asChild>
-                <Link href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <Link href="https://github.com/sudoaj" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
                   <Github className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
                 </Link>
               </Button>
@@ -104,18 +103,14 @@ export default function Footer() {
                   <Linkedin className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
                 </Link>
               </Button>
+        
               <Button variant="ghost" size="icon" asChild>
-                <Link href="https://x.com/yourusername" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">
-                  <Twitter className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" asChild>
-                <Link href="https://youtube.com/yourchannel" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                <Link href="https://youtube.com/mkbhd" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
                   <Youtube className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
                 </Link>
               </Button>
                <Button variant="ghost" size="icon" asChild>
-                <Link href="https://instagram.com/yourusername" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <Link href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                   <Instagram className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
                 </Link>
               </Button>
@@ -149,15 +144,6 @@ export default function Footer() {
             </form>
             <p className="text-xs text-muted-foreground/70 mt-2">No spam, ever. Unsubscribe anytime.</p>
           </div>
-        </div>
-        
-        <Separator className="my-6 bg-border/30" />
-        
-        <div className="text-center text-xs text-muted-foreground/80 space-y-1">
-          <p>Built with Next.js, Tailwind CSS, and ShadCN UI. Deployed on Vercel.</p>
-          <p>
-            This site is a dynamic portfolio and experimental ground. Content and features may evolve.
-          </p>
         </div>
       </div>
     </footer>

@@ -12,28 +12,28 @@ const sampleProjects: GitHubRepo[] = [
   {
     name: 'E-commerce Platform',
     description: 'A full-stack e-commerce platform with Next.js, Stripe, and Firebase.',
-    url: 'https://github.com/yourusername/ecommerce-platform',
+    url: 'https://github.com/sudoaj/ecommerce-platform',
     language: 'TypeScript',
     lastUpdated: '2024-07-15T10:30:00Z',
   },
   {
     name: 'AI Powered Chatbot',
     description: 'An intelligent chatbot using OpenAI API and LangChain for customer support.',
-    url: 'https://github.com/yourusername/ai-chatbot',
+    url: 'https://github.com/sudoaj/ai-chatbot',
     language: 'Python',
     lastUpdated: '2024-06-20T14:00:00Z',
   },
   {
     name: 'Data Visualization Dashboard',
     description: 'A React-based dashboard for visualizing complex datasets with D3.js.',
-    url: 'https://github.com/yourusername/data-viz-dashboard',
+    url: 'https://github.com/sudoaj/data-viz-dashboard',
     language: 'JavaScript',
     lastUpdated: '2024-05-01T09:15:00Z',
   },
    {
     name: 'Security Logger',
     description: 'A robust security logging system for enterprise applications.',
-    url: 'https://github.com/yourusername/security-logger',
+    url: 'https://github.com/sudoaj/security-logger',
     language: 'Java',
     lastUpdated: '2023-11-10T18:45:00Z',
   },
@@ -59,7 +59,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, className
 );
 
 export default async function ProjectsSection() {
-  // const projects = await getGitHubRepos('yourusername'); // Replace 'yourusername'
+  // const projects = await getGitHubRepos('sudoaj'); // Replace 'sudoaj'
   const projects = sampleProjects; // Using sample data for now
 
   // Calculate stats based on the projects data
@@ -72,7 +72,7 @@ export default async function ProjectsSection() {
   const liveProjects = 5; 
 
   // Display a subset of projects for the homepage section
-  const displayedProjects = projects.slice(0, 3);
+  const displayedProjects = projects.slice(0, 1);
 
 
   return (

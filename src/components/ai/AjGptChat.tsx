@@ -62,7 +62,7 @@ export default function AjGptChat() {
     setError(null);
 
     try {
-      const aiInput: ProjectQAInput = { question: userMessage.text, username: 'yourusername' }; // Replace 'yourusername' with actual or dynamic username
+      const aiInput: ProjectQAInput = { question: userMessage.text, username: 'sudoaj' }; // Replace 'yourusername' with actual or dynamic username
       const response = await projectQA(aiInput);
       const aiMessage: Message = { id: (Date.now() + 1).toString(), text: response.answer, sender: 'ai' };
       setMessages((prev) => [...prev, aiMessage]);
@@ -89,7 +89,7 @@ export default function AjGptChat() {
       <CardHeader className="border-b border-border/30 p-4">
         <CardTitle className="flex items-center text-lg">
           <Bot className="mr-2 h-6 w-6 text-primary" />
-          AJ-GPT Assistant
+          AJ-GPT 
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
