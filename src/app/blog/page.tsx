@@ -1,59 +1,11 @@
 import type { Metadata } from 'next';
-import type { BlogPost } from '@/types';
+// No longer need BlogPost type here if getAllBlogPosts returns the correct type
+// import type { BlogPost } from '@/types'; 
 import BlogPostCard from '@/components/ui/BlogPostCard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-
-// Updated sample data to match BlogSection for consistency.
-// In a real app, this would be fetched from a CMS or markdown files.
-const sampleBlogPosts: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Why React is My Go-To Library',
-    date: '2024',
-    imageUrl: 'https://picsum.photos/seed/react/400/225',
-    imageHint: 'abstract code',
-    slug: 'why-react',
-    excerpt: 'An in-depth look at why React continues to be a dominant force in web development and my personal favorite for building modern UIs.',
-  },
-  {
-    id: '2',
-    title: 'The Rise of Server Components',
-    date: '2023',
-    imageUrl: 'https://picsum.photos/seed/server/400/225',
-    imageHint: 'cloud architecture',
-    slug: 'server-components',
-    excerpt: 'Exploring the paradigm shift with server components in Next.js and how they are changing the way we build web applications.',
-  },
-  {
-    id: '3',
-    title: 'Mastering TypeScript for Large Scale Apps',
-    date: '2022',
-    imageUrl: 'https://picsum.photos/seed/typescript/400/225',
-    imageHint: 'geometric pattern',
-    slug: 'mastering-typescript',
-    excerpt: 'Tips and tricks for leveraging TypeScript effectively in large-scale projects to improve code quality and maintainability.',
-  },
-  {
-    id: '4',
-    title: 'Deep Dive into Next.js App Router',
-    date: '2024',
-    imageUrl: 'https://picsum.photos/seed/nextjs/400/225',
-    imageHint: 'futuristic interface',
-    slug: 'nextjs-app-router',
-    excerpt: 'A comprehensive guide to understanding and utilizing the Next.js App Router for optimal performance and developer experience.',
-  },
-  {
-    id: '5',
-    title: 'State Management in Modern React',
-    date: '2023',
-    imageUrl: 'https://picsum.photos/seed/statemgmt/400/225',
-    imageHint: 'connected nodes',
-    slug: 'react-state-management',
-    excerpt: 'Comparing various state management solutions in React, from Context API to Zustand and Redux Toolkit.',
-  },
-];
+import { getAllBlogPosts } from '@/lib/blog'; // Import the function to get posts
 
 export const metadata: Metadata = {
   title: 'All Blog Posts | AJ-Playground',
@@ -61,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default function AllBlogPostsPage() {
+  const allPosts = getAllBlogPosts(); // Fetch posts using the new function
+
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
@@ -80,9 +34,9 @@ export default function AllBlogPostsPage() {
         </p>
       </header>
 
-      {sampleBlogPosts.length > 0 ? (
+      {allPosts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sampleBlogPosts.map((post) => (
+          {allPosts.map((post) => (
             <BlogPostCard key={post.id} post={post} />
           ))}
         </div>
