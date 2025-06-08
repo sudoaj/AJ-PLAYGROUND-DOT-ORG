@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { marked } from 'marked';
 import { BlogPost } from '@/types'; // Assuming BlogPost is in @/types
 
 const postsDirectory = path.join(process.cwd(), 'content/posts');
@@ -55,8 +54,7 @@ export function getBlogPostBySlug(slug: string): BlogPostWithContent | null {
       return null;
     }
 
-    const htmlContent = marked(content);
-
+    // Return raw markdown content instead of HTML
     return {
       id: slug,
       slug: slug,
@@ -65,7 +63,7 @@ export function getBlogPostBySlug(slug: string): BlogPostWithContent | null {
       excerpt: data.excerpt,
       imageUrl: data.imageUrl,
       imageHint: data.imageHint,
-      content: htmlContent,
+      content: content, // Raw markdown content
     } as BlogPostWithContent; // Type assertion
   } catch (error) {
     // Handle file not found or other errors

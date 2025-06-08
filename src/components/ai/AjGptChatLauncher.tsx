@@ -67,7 +67,6 @@ export default function AjGptChatLauncher() {
       >
         {isOpen && (
           <div className="w-full max-w-sm md:max-w-md">
-             {/* AjGptChat is already a Card, we ensure it's rendered when open */}
             <AjGptChat />
           </div>
         )}

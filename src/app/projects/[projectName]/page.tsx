@@ -78,8 +78,9 @@ async function getProjectData(slug: string): Promise<GitHubRepo | undefined> {
   return sampleProjects.find((project) => slugify(project.name) === slug);
 }
 
-export async function generateMetadata({ params }: { params: { projectName: string } }) {
-  const project = await getProjectData(params.projectName);
+export async function generateMetadata({ params }: { params: Promise<{ projectName: string }> }) {
+  const { projectName } = await params;
+  const project = await getProjectData(projectName);
   if (!project) {
     return {
       title: 'Project Not Found',
@@ -91,8 +92,9 @@ export async function generateMetadata({ params }: { params: { projectName: stri
   };
 }
 
-export default async function ProjectDetailPage({ params }: { params: { projectName: string } }) {
-  const project = await getProjectData(params.projectName);
+export default async function ProjectDetailPage({ params }: { params: Promise<{ projectName: string }> }) {
+  const { projectName } = await params;
+  const project = await getProjectData(projectName);
 
   if (!project) {
     return (

@@ -4,14 +4,48 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Download } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Menu, Download, ChevronDown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
+import { BlogPost } from '@/types';
+
+// Sample projects data for dropdown (should match the data from other components)
+const sampleProjects = [
+  { name: 'E-commerce Platform', slug: 'e-commerce-platform' },
+  { name: 'AI Powered Chatbot', slug: 'ai-powered-chatbot' },
+  { name: 'Data Visualization Dashboard', slug: 'data-visualization-dashboard' },
+  { name: 'Security Logger', slug: 'security-logger' },
+  { name: 'Mobile Task Manager', slug: 'mobile-task-manager' },
+  { name: 'Cloud File Storage', slug: 'cloud-file-storage' },
+];
+
+// Sample blog posts for dropdown (in a real app, this would come from an API route)
+const sampleBlogPosts: BlogPost[] = [
+  {
+    id: 'server-components',
+    slug: 'server-components',
+    title: 'Understanding React Server Components',
+    date: '2024-04-02',
+    excerpt: 'A look into React Server Components, their benefits, and how they are changing the way we build React applications.',
+    imageUrl: '/images/blog/server-components-flow.png',
+    imageHint: 'React Server Components Data Flow'
+  },
+  {
+    id: 'why-react',
+    slug: 'why-react', 
+    title: 'Why React is a Great Choice for Modern Web Development',
+    date: '2024-03-15',
+    excerpt: 'Exploring the reasons behind React\'s popularity and its benefits for building dynamic user interfaces.',
+    imageUrl: '/images/blog/react-logo.png',
+    imageHint: 'React Logo'
+  }
+];
 
 const navLinks = [
-  { href: '/#projects', label: 'Projects' },
-  { href: '/#blog', label: 'Blog' },
-  { href: '/#playground', label: 'Playground' },
+  { href: '/projects', label: 'Projects', hasDropdown: true },
+  { href: '/blog', label: 'Blog', hasDropdown: true },
+  { href: '/playground', label: 'Playground', hasDropdown: false },
 ];
 
 export default function Header() {
@@ -23,36 +57,114 @@ export default function Header() {
     setMounted(true);
   }, []);
 
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
-    if (href.startsWith('/#')) {
-      e.preventDefault();
-      const sectionId = href.substring(2);
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-    // Close sheet if an item is clicked
-    setIsSheetOpen(false); 
+  // Helper function to create project slugs
+  const slugify = (text: string): string => {
+    return text
+      .toString()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
   };
 
-  const commonNavItems = (
-    <>
-      {navLinks.map((link) => (
+  const renderNavItem = (link: typeof navLinks[0]) => {
+    if (!link.hasDropdown) {
+      return (
         <Link
           key={link.href}
           href={link.href}
-          onClick={(e) => scrollToSection(e, link.href)}
           className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
         >
           {link.label}
         </Link>
-      ))}
+      );
+    }
+
+    if (link.label === 'Projects') {
+      return (
+        <DropdownMenu key={link.href}>
+          <DropdownMenuTrigger className="flex items-center text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+            {link.label}
+            <ChevronDown className="ml-1 h-3 w-3" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuItem asChild>
+              <Link href="/projects" className="w-full">
+                View All Projects
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {sampleProjects.slice(0, 5).map((project) => (
+              <DropdownMenuItem key={project.slug} asChild>
+                <Link href={`/projects/${project.slug}`} className="w-full">
+                  {project.name}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+            {sampleProjects.length > 5 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/projects" className="w-full text-muted-foreground">
+                    View More...
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    if (link.label === 'Blog') {
+      return (
+        <DropdownMenu key={link.href}>
+          <DropdownMenuTrigger className="flex items-center text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+            {link.label}
+            <ChevronDown className="ml-1 h-3 w-3" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuItem asChild>
+              <Link href="/blog" className="w-full">
+                View All Posts
+              </Link>
+            </DropdownMenuItem>
+            {sampleBlogPosts.length > 0 && <DropdownMenuSeparator />}
+            {sampleBlogPosts.slice(0, 5).map((post) => (
+              <DropdownMenuItem key={post.slug} asChild>
+                <Link href={`/blog/${post.slug}`} className="w-full">
+                  {post.title}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+            {sampleBlogPosts.length > 5 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/blog" className="w-full text-muted-foreground">
+                    View More...
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    return null;
+  };
+
+  const commonNavItems = (
+    <>
+      {navLinks.map(renderNavItem)}
       <Button variant="outline" size="sm" asChild>
-        <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" download>
+        <Link href="/resume">
           <Download className="mr-2 h-4 w-4" />
           Resume
-        </a>
+        </Link>
       </Button>
     </>
   );
@@ -62,7 +174,7 @@ export default function Header() {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="text-xl font-bold text-primary">
-            AJ-Playground
+            AJ's Playground
           </Link>
           {/* Skeleton for nav items */}
           <div className="hidden md:flex items-center space-x-6">
@@ -80,8 +192,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">
-          AJ-Playground
+        <Link
+          href="/"
+          className="pl-6 pr-6 py-2 text-2xl font-bold text-primary hover:opacity-80 transition-opacity"
+        >
+          AJ's Playground
         </Link>
         {isMobile ? (
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -96,21 +211,66 @@ export default function Header() {
                 <SheetTitle className="text-left text-lg font-semibold">Navigation</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col space-y-6 p-6 pt-4">
-                {navLinks.map((link) => (
-                  <Button key={link.href} variant="ghost" asChild className="justify-start">
-                    <Link
-                      href={link.href}
-                      onClick={(e) => scrollToSection(e, link.href)}
-                    >
-                      {link.label}
-                    </Link>
-                  </Button>
-                ))}
+                {navLinks.map((link) => {
+                  if (!link.hasDropdown) {
+                    return (
+                      <Button key={link.href} variant="ghost" asChild className="justify-start">
+                        <Link href={link.href} onClick={() => setIsSheetOpen(false)}>
+                          {link.label}
+                        </Link>
+                      </Button>
+                    );
+                  }
+                  
+                  if (link.label === 'Projects') {
+                    return (
+                      <div key={link.href} className="space-y-2">
+                        <Button variant="ghost" asChild className="justify-start w-full">
+                          <Link href="/projects" onClick={() => setIsSheetOpen(false)}>
+                            All Projects
+                          </Link>
+                        </Button>
+                        <div className="pl-4 space-y-1">
+                          {sampleProjects.slice(0, 3).map((project) => (
+                            <Button key={project.slug} variant="ghost" size="sm" asChild className="justify-start w-full text-xs">
+                              <Link href={`/projects/${project.slug}`} onClick={() => setIsSheetOpen(false)}>
+                                {project.name}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  if (link.label === 'Blog') {
+                    return (
+                      <div key={link.href} className="space-y-2">
+                        <Button variant="ghost" asChild className="justify-start w-full">
+                          <Link href="/blog" onClick={() => setIsSheetOpen(false)}>
+                            All Blog Posts
+                          </Link>
+                        </Button>
+                        <div className="pl-4 space-y-1">
+                          {sampleBlogPosts.slice(0, 3).map((post) => (
+                            <Button key={post.slug} variant="ghost" size="sm" asChild className="justify-start w-full text-xs">
+                              <Link href={`/blog/${post.slug}`} onClick={() => setIsSheetOpen(false)}>
+                                {post.title}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  return null;
+                })}
                 <Button variant="outline" asChild>
-                  <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" download>
+                  <Link href="/resume" onClick={() => setIsSheetOpen(false)}>
                     <Download className="mr-2 h-4 w-4" />
                     Resume
-                  </a>
+                  </Link>
                 </Button>
               </div>
             </SheetContent>

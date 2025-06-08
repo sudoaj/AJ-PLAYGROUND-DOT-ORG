@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'AJ\'s Playground | Personal Portfolio & Blog',
-  description: "Welcome to AJ's playground. Explore projects, read blog posts, and interact with web experiments.",
+  description: "Welcome to AJ's playground. Explore the software engineering portfolio of AJ, discover various vibe coded projects in AJ's head, read blog posts, and interact with web experiments.",
   keywords: "AJ, portfolio, blog, projects, web developer, AI, GitHub",
 };
 

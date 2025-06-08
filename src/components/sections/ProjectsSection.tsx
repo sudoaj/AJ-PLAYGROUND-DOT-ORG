@@ -68,11 +68,11 @@ export default async function ProjectsSection() {
   const totalLanguages = languages.size;
   
   // Placeholder values for frameworks and live projects (as they were in StatsSection)
-  const totalFrameworks = 4; 
-  const liveProjects = 5; 
+  const totalFrameworks = 2; 
+  const liveProjects = projects.length; 
 
   // Display a subset of projects for the homepage section
-  const displayedProjects = projects.slice(0, 1);
+  const displayedProjects = projects.slice(0, 3);
 
 
   return (
@@ -82,7 +82,7 @@ export default async function ProjectsSection() {
           Projects & Impact
         </h2>
         <p className="text-lg text-muted-foreground mb-12 text-center max-w-2xl mx-auto">
-          A showcase of my key projects and a glimpse into the technologies I&apos;ve worked with. Explore my GitHub for a full list of contributions.
+          A showcase of my key projects and a glimpse into the technologies I&apos;ve worked with.
         </p>
 
         {/* Stats Grid */}
