@@ -90,7 +90,7 @@ export default async function ProjectsSection() {
         {/* "View All Projects" Button */}
         {allProjects.length > 3 && (
           <div className="mt-12 text-center">
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="hover:text-black dark:hover:text-white">
               <Link href="/projects">
                 View All Projects
                 <ArrowRight className="ml-2 h-4 w-4" />

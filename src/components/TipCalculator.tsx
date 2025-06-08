@@ -48,7 +48,7 @@ export default function TipCalculator() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary/80">
+          <Button variant="ghost" size="sm" asChild className="text-primary hover:text-black dark:hover:text-dark">
             <Link href="/playground">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Playground
@@ -244,14 +244,14 @@ export default function TipCalculator() {
         {/* Action Buttons */}
         <div className="mt-12 text-center">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" asChild>
-              <Link href="/playground">
-                Explore More Tools
-              </Link>
-            </Button>
-            <Button asChild>
+            <Button variant="outline" asChild className="hover:text-black dark:hover:text-black">
               <Link href="/">
                 Back to Home
+              </Link>
+            </Button>
+            <Button asChild className="hover:text-white dark:hover:text-black">
+              <Link href="/playground">
+                Explore More Tools
               </Link>
             </Button>
           </div>
