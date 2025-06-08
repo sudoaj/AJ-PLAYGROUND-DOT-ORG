@@ -4,9 +4,9 @@ import ComingSoonAnimation from '@/components/ui/ComingSoonAnimation';
 import type { Metadata } from 'next';
 
 interface PlaygroundProjectPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -17,7 +17,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PlaygroundProjectPageProps): Promise<Metadata> {
-  const project = getPlaygroundProject(params.slug);
+  const { slug } = await params;
+  const project = getPlaygroundProject(slug);
   
   if (!project) {
     return {
@@ -31,8 +32,9 @@ export async function generateMetadata({ params }: PlaygroundProjectPageProps): 
   };
 }
 
-export default function PlaygroundProjectPage({ params }: PlaygroundProjectPageProps) {
-  const project = getPlaygroundProject(params.slug);
+export default async function PlaygroundProjectPage({ params }: PlaygroundProjectPageProps) {
+  const { slug } = await params;
+  const project = getPlaygroundProject(slug);
 
   if (!project) {
     notFound();

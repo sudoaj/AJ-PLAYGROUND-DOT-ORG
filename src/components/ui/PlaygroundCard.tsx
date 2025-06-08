@@ -12,7 +12,7 @@ interface PlaygroundCardProps {
 
 export default function PlaygroundCard({ project, showInteractButton = false }: PlaygroundCardProps) {
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-muted-foreground/20">
+    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="text-3xl group-hover:scale-110 transition-transform duration-300">
@@ -25,7 +25,7 @@ export default function PlaygroundCard({ project, showInteractButton = false }: 
         <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
           {project.title}
         </CardTitle>
-        <CardDescription className="line-clamp-2">
+        <CardDescription className="text-sm text-muted-foreground overflow-hidden">
           {project.shortDescription}
         </CardDescription>
       </CardHeader>
@@ -45,12 +45,14 @@ export default function PlaygroundCard({ project, showInteractButton = false }: 
           )}
         </div>
         {!showInteractButton && (
-          <Link 
-            href={`/playground/${project.slug}`}
-            className="absolute inset-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          >
-            <span className="sr-only">View {project.title}</span>
-          </Link>
+          <div className="mt-4">
+            <Button size="sm" variant="outline" asChild className="w-full">
+              <Link href={`/playground/${project.slug}`}>
+                View Project
+                <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>
