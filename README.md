@@ -1,18 +1,20 @@
 # AJ-Playground
 
-A dynamic portfolio website and experimental playground showcasing my web development projects and creative coding experiments.
+A dynamic portfolio website and experimental playground showcasing my web development projects, interactive tools, and creative coding experiments.
 
 ## Overview
 
-AJ-Playground is a Next.js-based personal portfolio and blog site that showcases projects through markdown-based content management. It features a clean, modern design and responsive layout optimized for all devices.
+AJ-Playground is a Next.js-based personal portfolio and blog site that showcases projects through markdown-based content management. It features a clean, modern design, responsive layout optimized for all devices, and an interactive playground section with functional web tools and experiments.
 
 ## Features
 
+- **Interactive Playground**: A collection of functional web tools and experimental projects
 - **Markdown-Based Project Portfolio**: Projects managed through markdown files with frontmatter metadata
 - **Blog Section**: Technical articles and development insights using markdown
 - **Modern UI**: Built with Next.js, Tailwind CSS, and ShadCN UI components
 - **Responsive Design**: Fully responsive for all devices and screen sizes
 - **Static Content Management**: File-based content system for easy project and blog management
+
 
 ## Tech Stack
 
@@ -53,19 +55,48 @@ AJ-Playground is a Next.js-based personal portfolio and blog site that showcases
 
 ```
 src/
-├── app/          # Next.js app directory and pages
-├── components/   # React components
-├── hooks/        # Custom React hooks
-├── lib/          # Utility functions and content management
-├── services/     # API services (if needed)
-└── types/        # TypeScript type definitions
+├── app/
+│   ├── api/            # API routes for projects, blog, and playground
+│   ├── blog/           # Blog pages with dynamic routing
+│   ├── playground/     # Interactive playground section
+│   │   └── [slug]/     # Dynamic routes for individual playground projects
+│   ├── projects/       # Project showcase pages
+│   └── resume/         # Resume page
+├── components/
+│   ├── layout/         # Header, Footer, and layout components
+│   ├── sections/       # Hero, Projects, Blog, and Playground sections
+│   ├── ui/             # Reusable UI components (cards, animations, etc.)
+│   └── TipCalculator.tsx  # Functional tip calculator tool
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions and content management
+├── services/           # API services
+└── types/              # TypeScript type definitions
 content/
-├── projects/     # Project markdown files
-├── posts/        # Blog post markdown files
-└── /images/       # Static images for content
+├── projects/           # Project markdown files
+├── posts/              # Blog post markdown files
+└── images/             # Static images for content
 ```
 
 ## Features in Detail
+
+### Interactive Playground
+
+The playground section features a collection of interactive tools and experimental projects:
+
+#### Live Tools
+- **💰 Tip Calculator**: A fully functional tip calculator with bill splitting, customizable tip percentages, and service quality guides
+  - Smart calculations for multiple people
+  - Pre-set tip percentage buttons (15%, 18%, 20%, 22%, 25%)
+  - Custom tip percentage input
+  - Real-time calculations and visual breakdown
+  - Service quality tipping guide
+
+#### Coming Soon Projects
+- **🚀 Future OS Concept Visualizer**: Interactive visualization of futuristic operating system concepts
+- **🎮 Retro Games**: Classic arcade games recreated with modern web technologies
+- **📝 Developer Cheatsheet**: Interactive reference guide with searchable syntax and code snippets
+
+Each playground project has its own dedicated page with either functional tools or animated "coming soon" previews with progress indicators and feature hints.
 
 ### Markdown-Based Content Management
 
@@ -83,6 +114,14 @@ Each project includes:
 - Repository links
 - Project images and detailed markdown content
 
+### Navigation & User Experience
+
+- **Responsive Header**: Dynamic navigation with playground dropdown showing project grid
+- **Mobile-Optimized**: Full mobile navigation with collapsible menus
+- **Interactive Cards**: Project and playground cards with hover effects and status indicators
+- **Coming Soon Animations**: Animated previews for upcoming playground projects with sparkle effects and progress indicators
+- **Seamless Routing**: Dynamic routing between projects, blog posts, and playground tools
+
 ### Blog
 
 A collection of technical articles about topics like:
@@ -90,14 +129,41 @@ A collection of technical articles about topics like:
 - TypeScript for Large Scale Apps
 - Modern React State Management
 
+## Key Technologies & Architecture
+
+- **Next.js 15**: App Router with server components and dynamic routing
+- **TypeScript**: Full type safety throughout the application
+- **Tailwind CSS**: Utility-first CSS framework for rapid UI development
+- **ShadCN UI**: High-quality, accessible component library
+- **Lucide React**: Modern icon library for consistent iconography
+- **Gray-matter**: Frontmatter parsing for markdown content
+- **Responsive Design**: Mobile-first approach with breakpoint-specific layouts
+
 ## Development
 
 ### Commands
 
-- `npm run dev` - Start the development server
+- `npm run dev` - Start the development server on port 9002
 - `npm run build` - Build the production application
 - `npm start` - Start the production server
-- `npm run lint` - Run ESLint
+- `npm run lint` - Run ESLint for code quality
+
+### Development Features
+
+- **Hot Reload**: Instant updates during development
+- **TypeScript Support**: Full type checking and IntelliSense
+- **Component-Based Architecture**: Modular, reusable components
+- **API Routes**: Built-in API endpoints for content management
+- **Static Generation**: Optimized builds with static site generation
+
+## Playground Projects Status
+
+| Project | Status | Features |
+|---------|--------|----------|
+| 💰 Tip Calculator | ✅ Live | Bill splitting, custom tips, service guide |
+| 🚀 Future OS Visualizer | 🚧 Coming Soon | Interactive UI concepts, animations |
+| 🎮 Retro Games | 🚧 Coming Soon | Classic arcade games, pixel graphics |
+| 📝 Developer Cheatsheet | 🚧 Coming Soon | Syntax references, code snippets |
 
 ## License
 
