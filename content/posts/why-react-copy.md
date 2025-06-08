@@ -1,7 +1,7 @@
 ---
-title: "Why React is a Great Choice for Modern Web Development"
+title: "Why React is a Great Choice for Modern Web Development(copy)"
 date: "2024-03-15"
-slug: "why-react"
+slug: "why-react-copy"
 excerpt: "Exploring the reasons behind React's popularity and its benefits for building dynamic user interfaces."
 imageUrl: "/images/blog/why-react-cover.png"
 imageHint: "React Logo"

@@ -2,7 +2,6 @@
 'use client';
 
 import AnimatedSvgBackground from '@/components/ui/AnimatedSvgBackground';
-import AjGptChatLauncher from '@/components/ai/AjGptChatLauncher';
 import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
 
@@ -56,12 +55,9 @@ Welcome to AJ's playground. Explore the software engineering portfolio of AJ, di
         </div>
 
         <p className="text-sm md:text-md text-foreground/70 mt-12 animate-fade-in-up backdrop-blur-sm bg-background/10 px-4 py-2 rounded-lg" style={{animationDelay: '1s'}}>
-          Need to ask something about my work? Try AJ-GPT!
+          Welcome to my digital playground!
         </p>
       </div>
-
-      {/* AJ-GPT Chat Launcher - positioned independently */}
-      <AjGptChatLauncher />
     </section>
   );
 }

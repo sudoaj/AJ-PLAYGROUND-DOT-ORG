@@ -1,48 +1,15 @@
-
-import type { GitHubRepo } from '@/services/github';
 import ProjectCard from '@/components/ui/ProjectCard';
+import { getFeaturedProjects, getAllProjects } from '@/lib/projects';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, Briefcase, Code2, Layers, PlayCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ElementType } from 'react';
 
-// Sample project data for demonstration, matching GitHubRepo structure
-const sampleProjects: GitHubRepo[] = [
-  {
-    name: 'E-commerce Platform',
-    description: 'A full-stack e-commerce platform with Next.js, Stripe, and Firebase.',
-    url: 'https://github.com/sudoaj/ecommerce-platform',
-    language: 'TypeScript',
-    lastUpdated: '2024-07-15T10:30:00Z',
-  },
-  {
-    name: 'AI Powered Chatbot',
-    description: 'An intelligent chatbot using OpenAI API and LangChain for customer support.',
-    url: 'https://github.com/sudoaj/ai-chatbot',
-    language: 'Python',
-    lastUpdated: '2024-06-20T14:00:00Z',
-  },
-  {
-    name: 'Data Visualization Dashboard',
-    description: 'A React-based dashboard for visualizing complex datasets with D3.js.',
-    url: 'https://github.com/sudoaj/data-viz-dashboard',
-    language: 'JavaScript',
-    lastUpdated: '2024-05-01T09:15:00Z',
-  },
-   {
-    name: 'Security Logger',
-    description: 'A robust security logging system for enterprise applications.',
-    url: 'https://github.com/sudoaj/security-logger',
-    language: 'Java',
-    lastUpdated: '2023-11-10T18:45:00Z',
-  },
-];
-
 interface StatCardProps {
   icon: ElementType;
   title: string;
-  value: string | number;
+  value: number;
   className?: string;
 }
 
@@ -59,21 +26,35 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, className
 );
 
 export default async function ProjectsSection() {
-  // const projects = await getGitHubRepos('sudoaj'); // Replace 'sudoaj'
-  const projects = sampleProjects; // Using sample data for now
-
-  // Calculate stats based on the projects data
-  const totalProjects = projects.length;
-  const languages = new Set(projects.map(p => p.language).filter(Boolean));
+  const featuredProjects = await getFeaturedProjects();
+  const allProjects = await getAllProjects();
+  
+  // If we have fewer than 3 featured projects, supplement with regular projects
+  let displayProjects = [...featuredProjects];
+  if (displayProjects.length < 3) {
+    const additionalProjects = allProjects
+      .filter(p => !p.featured) // Only non-featured projects
+      .slice(0, 3 - displayProjects.length); // Fill up to 3 total
+    displayProjects = [...displayProjects, ...additionalProjects];
+  }
+  
+  // Calculate stats based on all projects
+  const totalProjects = allProjects.length;
+  const languages = new Set(allProjects.map((p) => p.language).filter(Boolean));
   const totalLanguages = languages.size;
   
-  // Placeholder values for frameworks and live projects (as they were in StatsSection)
-  const totalFrameworks = 2; 
-  const liveProjects = projects.length; 
+  // Calculate frameworks from technologies array
+  const allTechnologies = allProjects.flatMap(p => p.technologies || []);
+  const frameworks = new Set(allTechnologies.filter(tech => 
+    ['React', 'Next.js', 'Vue', 'Angular', 'Express', 'FastAPI', 'Django', 'Flask', 'Spring'].includes(tech)
+  ));
+  const totalFrameworks = frameworks.size;
+  
+  // Count projects with actual URLs (not just "#")
+  const liveProjects = allProjects.filter(p => p.url && p.url !== '#').length; 
 
   // Display a subset of projects for the homepage section
-  const displayedProjects = projects.slice(0, 3);
-
+  const displayedProjects = displayProjects.slice(0, 3);
 
   return (
     <section id="projects" className="py-16 md:py-24 bg-background/90 scroll-mt-20">
@@ -92,12 +73,14 @@ export default async function ProjectsSection() {
           <StatCard icon={Layers} title="Frameworks Leveraged" value={totalFrameworks} />
           <StatCard icon={PlayCircle} title="Live Deployments" value={liveProjects} />
         </div>
+
+        
         
         {/* Projects Grid */}
         {displayedProjects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {displayedProjects.map((project) => (
-              <ProjectCard key={project.name} project={project} />
+              <ProjectCard key={project.slug} project={project} />
             ))}
           </div>
         ) : (
@@ -105,7 +88,7 @@ export default async function ProjectsSection() {
         )}
 
         {/* "View All Projects" Button */}
-        {projects.length > 3 && (
+        {allProjects.length > 3 && (
           <div className="mt-12 text-center">
             <Button asChild variant="outline" size="lg">
               <Link href="/projects">
@@ -119,4 +102,3 @@ export default async function ProjectsSection() {
     </section>
   );
 }
-

@@ -9,38 +9,7 @@ import { Menu, Download, ChevronDown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
 import { BlogPost } from '@/types';
-
-// Sample projects data for dropdown (should match the data from other components)
-const sampleProjects = [
-  { name: 'E-commerce Platform', slug: 'e-commerce-platform' },
-  { name: 'AI Powered Chatbot', slug: 'ai-powered-chatbot' },
-  { name: 'Data Visualization Dashboard', slug: 'data-visualization-dashboard' },
-  { name: 'Security Logger', slug: 'security-logger' },
-  { name: 'Mobile Task Manager', slug: 'mobile-task-manager' },
-  { name: 'Cloud File Storage', slug: 'cloud-file-storage' },
-];
-
-// Sample blog posts for dropdown (in a real app, this would come from an API route)
-const sampleBlogPosts: BlogPost[] = [
-  {
-    id: 'server-components',
-    slug: 'server-components',
-    title: 'Understanding React Server Components',
-    date: '2024-04-02',
-    excerpt: 'A look into React Server Components, their benefits, and how they are changing the way we build React applications.',
-    imageUrl: '/images/blog/server-components-flow.png',
-    imageHint: 'React Server Components Data Flow'
-  },
-  {
-    id: 'why-react',
-    slug: 'why-react', 
-    title: 'Why React is a Great Choice for Modern Web Development',
-    date: '2024-03-15',
-    excerpt: 'Exploring the reasons behind React\'s popularity and its benefits for building dynamic user interfaces.',
-    imageUrl: '/images/blog/react-logo.png',
-    imageHint: 'React Logo'
-  }
-];
+import { Project } from '@/lib/projects';
 
 const navLinks = [
   { href: '/projects', label: 'Projects', hasDropdown: true },
@@ -52,22 +21,49 @@ export default function Header() {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+    loadData();
   }, []);
 
-  // Helper function to create project slugs
-  const slugify = (text: string): string => {
-    return text
-      .toString()
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-')
-      .replace(/^-+/, '')
-      .replace(/-+$/, '');
-  };
+  const loadData = async () => {
+    try {
+      const [projectsResponse, postsResponse] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/posts')
+      ]);
+
+      if (projectsResponse.ok) {
+        const projectsData = await projectsResponse.json();
+        setProjects(projectsData);
+      }
+
+      if (postsResponse.ok) {
+        const postsData = await postsResponse.json();
+        setBlogPosts(postsData);
+      }
+    } catch (error) {
+      console.error('Error loading navigation data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+};
+
+// Helper function to create project slugs
+const slugify = (text: string): string => {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+};
 
   const renderNavItem = (link: typeof navLinks[0]) => {
     if (!link.hasDropdown) {
@@ -96,14 +92,14 @@ export default function Header() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            {sampleProjects.slice(0, 5).map((project) => (
+            {projects.slice(0, 5).map((project) => (
               <DropdownMenuItem key={project.slug} asChild>
                 <Link href={`/projects/${project.slug}`} className="w-full">
-                  {project.name}
+                  {project.title}
                 </Link>
               </DropdownMenuItem>
             ))}
-            {sampleProjects.length > 5 && (
+            {projects.length > 5 && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -131,15 +127,15 @@ export default function Header() {
                 View All Posts
               </Link>
             </DropdownMenuItem>
-            {sampleBlogPosts.length > 0 && <DropdownMenuSeparator />}
-            {sampleBlogPosts.slice(0, 5).map((post) => (
+            {blogPosts.length > 0 && <DropdownMenuSeparator />}
+            {blogPosts.slice(0, 5).map((post) => (
               <DropdownMenuItem key={post.slug} asChild>
                 <Link href={`/blog/${post.slug}`} className="w-full">
                   {post.title}
                 </Link>
               </DropdownMenuItem>
             ))}
-            {sampleBlogPosts.length > 5 && (
+            {blogPosts.length > 5 && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -231,10 +227,10 @@ export default function Header() {
                           </Link>
                         </Button>
                         <div className="pl-4 space-y-1">
-                          {sampleProjects.slice(0, 3).map((project) => (
+                          {projects.slice(0, 3).map((project) => (
                             <Button key={project.slug} variant="ghost" size="sm" asChild className="justify-start w-full text-xs">
                               <Link href={`/projects/${project.slug}`} onClick={() => setIsSheetOpen(false)}>
-                                {project.name}
+                                {project.title}
                               </Link>
                             </Button>
                           ))}
@@ -252,7 +248,7 @@ export default function Header() {
                           </Link>
                         </Button>
                         <div className="pl-4 space-y-1">
-                          {sampleBlogPosts.slice(0, 3).map((post) => (
+                          {blogPosts.slice(0, 3).map((post) => (
                             <Button key={post.slug} variant="ghost" size="sm" asChild className="justify-start w-full text-xs">
                               <Link href={`/blog/${post.slug}`} onClick={() => setIsSheetOpen(false)}>
                                 {post.title}

@@ -1,25 +1,25 @@
 # AJ-Playground
 
-A dynamic portfolio website and experimental playground showcasing my web development, artificial intelligence, and creative coding projects.
+A dynamic portfolio website and experimental playground showcasing my web development projects and creative coding experiments.
 
 ## Overview
 
-AJ-Playground is a Next.js-based personal portfolio and blog site that integrates with GitHub to display projects dynamically. It features an AI-powered assistant (AJ-GPT) that can answer questions about the showcased projects.
+AJ-Playground is a Next.js-based personal portfolio and blog site that showcases projects through markdown-based content management. It features a clean, modern design and responsive layout optimized for all devices.
 
 ## Features
 
-- **Dynamic Project Portfolio**: Automatically pulls and displays project information from GitHub
-- **Blog Section**: Showcases technical articles and development insights
-- **AI Project Assistant**: Uses AI to answer questions about the showcased projects
+- **Markdown-Based Project Portfolio**: Projects managed through markdown files with frontmatter metadata
+- **Blog Section**: Technical articles and development insights using markdown
 - **Modern UI**: Built with Next.js, Tailwind CSS, and ShadCN UI components
 - **Responsive Design**: Fully responsive for all devices and screen sizes
+- **Static Content Management**: File-based content system for easy project and blog management
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14 with App Router
+- **Frontend**: Next.js 15 with App Router
 - **Styling**: Tailwind CSS
 - **UI Components**: ShadCN UI
-- **AI Integration**: Custom AI flows for project QA and summaries
+- **Content**: Markdown with gray-matter
 - **Deployment**: Vercel
 
 ## Getting Started
@@ -33,7 +33,7 @@ AJ-Playground is a Next.js-based personal portfolio and blog site that integrate
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/AJ-PLAYGROUND-DOT-ORG.git
+   git clone https://github.com/sudoaj/AJ-PLAYGROUND-DOT-ORG.git
    cd AJ-PLAYGROUND-DOT-ORG
    ```
 
@@ -42,45 +42,46 @@ AJ-Playground is a Next.js-based personal portfolio and blog site that integrate
    npm install
    ```
 
-3. Set up environment variables:
-   Create a `.env.local` file in the root directory with the following variables:
-   ```
-   GITHUB_TOKEN=your_github_token
-   ```
-
-4. Start the development server:
+3. Start the development server:
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:9002](http://localhost:9002) in your browser
 
 ## Project Structure
 
 ```
 src/
-├── ai/           # AI flows and assistants
 ├── app/          # Next.js app directory and pages
 ├── components/   # React components
 ├── hooks/        # Custom React hooks
-├── lib/          # Utility functions
-├── services/     # API services
+├── lib/          # Utility functions and content management
+├── services/     # API services (if needed)
 └── types/        # TypeScript type definitions
+content/
+├── projects/     # Project markdown files
+├── posts/        # Blog post markdown files
+└── /images/       # Static images for content
 ```
 
 ## Features in Detail
 
-### GitHub Project Integration
+### Markdown-Based Content Management
 
-Fetches and displays project information from GitHub, including:
+Projects and blog posts are managed through markdown files with frontmatter metadata:
+- Project details including title, description, technologies, and status
+- Blog posts with publication dates and tags
+- Static images organized by content type
+
+### Project Showcase
+
+Each project includes:
 - Project title and description
 - Technologies used
 - Last updated date
 - Repository links
-
-### AI Project Assistant (AJ-GPT)
-
-Implemented in the `project-qa.ts` file, this feature allows users to ask questions about projects and receive AI-generated responses based on the project data.
+- Project images and detailed markdown content
 
 ### Blog
 

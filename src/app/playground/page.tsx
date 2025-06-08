@@ -71,7 +71,7 @@ export default function PlaygroundPage() {
           AJ&apos;s Playground
         </h1>
         <p className="mt-3 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          A space for interactive experiments, code snippets, and mini-projects. Dive in and explore!
+          A space for interactive experiments, Dive in and explore!
         </p>
       </header>
 

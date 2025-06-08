@@ -1,214 +1,264 @@
-import type { GitHubRepo } from '@/services/github';
+import { getProjectBySlug, getAllProjects } from '@/lib/projects';
+import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, CalendarDays, ExternalLink, Briefcase, Code, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from 'date-fns';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import rehypeSlug from 'rehype-slug';
 
-// Sample project data, should be consistent with /projects/page.tsx and other sources
-const sampleProjects: GitHubRepo[] = [
-  {
-    name: 'E-commerce Platform',
-    description: 'A full-stack e-commerce platform with Next.js, Stripe, and Firebase. This project aims to provide a seamless shopping experience for users and a robust management system for administrators.',
-    url: 'https://github.com/yourusername/ecommerce-platform',
-    language: 'TypeScript',
-    lastUpdated: '2024-07-15T10:30:00Z',
-  },
-  {
-    name: 'AI Powered Chatbot',
-    description: 'An intelligent chatbot using OpenAI API and LangChain for customer support. It can understand natural language queries and provide relevant assistance or escalate issues to human agents.',
-    url: 'https://github.com/yourusername/ai-chatbot',
-    language: 'Python',
-    lastUpdated: '2024-06-20T14:00:00Z',
-  },
-  {
-    name: 'Data Visualization Dashboard',
-    description: 'A React-based dashboard for visualizing complex datasets with D3.js. It offers interactive charts and graphs to help users gain insights from their data effectively.',
-    url: 'https://github.com/yourusername/data-viz-dashboard',
-    language: 'JavaScript',
-    lastUpdated: '2024-05-01T09:15:00Z',
-  },
-   {
-    name: 'Security Logger',
-    description: 'A robust security logging system for enterprise applications. It provides comprehensive audit trails and real-time alerts for potential security breaches.',
-    url: 'https://github.com/yourusername/security-logger',
-    language: 'Java',
-    lastUpdated: '2023-11-10T18:45:00Z',
-  },
-  {
-    name: 'Mobile Task Manager',
-    description: 'A cross-platform mobile app for task management built with React Native. It helps users organize their tasks, set reminders, and collaborate with team members.',
-    url: 'https://github.com/yourusername/mobile-task-manager',
-    language: 'TypeScript',
-    lastUpdated: '2024-04-10T12:00:00Z',
-  },
-  {
-    name: 'Cloud File Storage',
-    description: 'A serverless cloud file storage solution using AWS S3 and Lambda. It offers scalable, secure, and cost-effective file storage with easy access and management capabilities.',
-    url: 'https://github.com/yourusername/cloud-file-storage',
-    language: 'Python',
-    lastUpdated: '2024-03-05T16:30:00Z',
-  },
-];
+interface ProjectPageProps {
+  params: Promise<{ projectName: string }>;
+}
 
-// Utility function to slugify project names
-const slugify = (text: string): string => {
-  if (!text) return '';
-  return text
-    .toString()
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w-]+/g, '') // Remove all non-word chars
-    .replace(/--+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
-};
-
-// Function to generate static paths
 export async function generateStaticParams() {
-  return sampleProjects.map((project) => ({
-    projectName: slugify(project.name),
+  const projects = await getAllProjects();
+  return projects.map((project) => ({
+    projectName: project.slug,
   }));
 }
 
-// Function to get project data
-async function getProjectData(slug: string): Promise<GitHubRepo | undefined> {
-  return sampleProjects.find((project) => slugify(project.name) === slug);
-}
-
-export async function generateMetadata({ params }: { params: Promise<{ projectName: string }> }) {
+export async function generateMetadata({ params }: ProjectPageProps) {
   const { projectName } = await params;
-  const project = await getProjectData(projectName);
+  const project = await getProjectBySlug(projectName);
+  
   if (!project) {
     return {
-      title: 'Project Not Found',
+      title: 'Project Not Found | AJ-Playground',
     };
   }
+
   return {
-    title: `${project.name} | AJ-Playground Projects`,
+    title: `${project.title} | AJ-Playground`,
     description: project.description,
   };
 }
 
-export default async function ProjectDetailPage({ params }: { params: Promise<{ projectName: string }> }) {
+export default async function ProjectPage({ params }: ProjectPageProps) {
   const { projectName } = await params;
-  const project = await getProjectData(projectName);
+  const projectData = await getProjectBySlug(projectName);
 
-  if (!project) {
-    return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-4xl font-bold mb-4">Project Not Found</h1>
-        <p className="text-muted-foreground mb-8">Sorry, we couldn't find the project you're looking for.</p>
-        <Button asChild>
+  if (!projectData) {
+    notFound();
+  }
+
+  const formattedDate = projectData.lastUpdated 
+    ? format(parseISO(projectData.lastUpdated), 'MMMM dd, yyyy') 
+    : 'N/A';
+
+  return (
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      {/* Back Button */}
+      <div className="mb-8">
+        <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary/80">
           <Link href="/projects">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to All Projects
+            Back to Projects
           </Link>
         </Button>
       </div>
-    );
-  }
 
-  const formattedDate = project.lastUpdated ? format(parseISO(project.lastUpdated), 'MMMM dd, yyyy') : 'N/A';
-  const imageUrl = `https://picsum.photos/seed/${slugify(project.name)}/800/450`;
-  const imageHint = `project ${project.language ? project.language.toLowerCase() : 'tech'}`;
+      {/* Project Header */}
+      <header className="mb-8">
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          <div className="relative w-full md:w-80 h-48 overflow-hidden rounded-lg">
+            <Image
+              src={projectData.imageUrl}
+              alt={projectData.imageHint}
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              {projectData.title}
+            </h1>
+            <p className="text-lg text-muted-foreground mb-6">
+              {projectData.description}
+            </p>
+            
+            {/* Project Metadata */}
+            <div className="space-y-3">
+              <div className="flex items-center text-sm text-muted-foreground">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                <span>Last Updated: {formattedDate}</span>
+              </div>
+              
+              {projectData.language && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Code className="mr-2 h-4 w-4" />
+                  <Badge variant="secondary">{projectData.language}</Badge>
+                </div>
+              )}
 
-  return (
-    <article className="container mx-auto px-4 py-8 md:py-12 max-w-3xl">
-      <Button variant="ghost" size="sm" asChild className="mb-8 text-primary hover:text-primary/80">
-        <Link href="/projects">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to All Projects
-        </Link>
-      </Button>
+              {projectData.status && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  {projectData.status === 'completed' ? (
+                    <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                  ) : (
+                    <AlertTriangle className="mr-2 h-4 w-4 text-yellow-500" />
+                  )}
+                  <Badge variant={projectData.status === 'completed' ? 'default' : 'secondary'}>
+                    {projectData.status.charAt(0).toUpperCase() + projectData.status.slice(1)}
+                  </Badge>
+                </div>
+              )}
+            </div>
 
-      <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 text-foreground leading-tight">
-        {project.name}
-      </h1>
-      <div className="flex items-center text-sm text-muted-foreground mb-2">
-        <CalendarDays className="mr-2 h-4 w-4" />
-        <span>Last Updated: {formattedDate}</span>
-      </div>
-      {project.language && (
-        <div className="mb-6">
-          <Badge variant="secondary" className="text-sm py-1 px-3">
-            <Code className="mr-2 h-4 w-4" /> {project.language}
-          </Badge>
+            {/* Technologies */}
+            {projectData.technologies && projectData.technologies.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Technologies Used:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {projectData.technologies.map((tech) => (
+                    <Badge key={tech} variant="outline" className="text-xs">
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* GitHub Link */}
+            <div className="mt-6">
+              <Button asChild>
+                <a href={projectData.url} target="_blank" rel="noopener noreferrer">
+                  View on GitHub
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          </div>
         </div>
-      )}
-      
-      <div className="relative aspect-[16/9] rounded-lg overflow-hidden mb-8 shadow-lg">
-        <Image
-          src={imageUrl}
-          alt={project.name}
-          fill
-          className="object-cover"
-          data-ai-hint={imageHint}
-          priority
-        />
-      </div>
-      
+      </header>
+
       <Separator className="my-8" />
 
-      <div className="prose prose-invert prose-lg max-w-none dark:prose-invert 
-                      prose-headings:text-foreground prose-p:text-foreground/80 prose-a:text-primary hover:prose-a:text-primary/80
-                      prose-strong:text-foreground prose-blockquote:border-primary prose-blockquote:text-foreground/70
-                      prose-ul:text-foreground/80 prose-li:marker:text-primary
-                      prose-code:text-sm prose-code:bg-muted prose-code:p-1 prose-code:rounded-sm">
-        
-        <h2><Briefcase className="inline-block mr-2 h-6 w-6 text-primary" />Project Overview</h2>
-        <p>{project.description}</p>
-        <p>
-          This project showcases practical application of modern development techniques to solve real-world problems. 
-          It was developed with a focus on scalability, maintainability, and user experience.
-        </p>
-
-        <h2><CheckCircle className="inline-block mr-2 h-6 w-6 text-primary" />Key Features</h2>
-        <ul>
-          <li>Responsive and accessible user interface design.</li>
-          <li>Efficient data handling and state management.</li>
-          <li>{`Integration with third-party services (e.g., ${project.language === 'TypeScript' || project.language === 'JavaScript' ? 'Stripe, Firebase' : project.language === 'Python' ? 'OpenAI API, AWS S3' : 'Relevant APIs'}).`}</li>
-          <li>Secure authentication and authorization mechanisms.</li>
-          <li>Comprehensive test coverage ensuring reliability.</li>
-        </ul>
-
-        <h2><Code className="inline-block mr-2 h-6 w-6 text-primary" />Technology Stack</h2>
-        <p>
-          The primary technology used in this project is <strong>{project.language}</strong>. 
-          Alongside this, other significant technologies and frameworks employed include:
-        </p>
-        <ul>
-          <li>{project.language === 'TypeScript' || project.language === 'JavaScript' ? 'Next.js, React, Node.js' : project.language === 'Python' ? 'Django/Flask, Pandas, NumPy' : 'Spring Boot, Maven (for Java)'}.</li>
-          <li>Tailwind CSS for styling.</li>
-          <li>{project.language === 'TypeScript' ? 'Firebase/Supabase' : project.language === 'Python' ? 'PostgreSQL/MongoDB' : 'MySQL/Oracle (for Java)'} for database management.</li>
-          <li>Version control with Git and GitHub.</li>
-          <li>Deployed using Vercel / AWS / Docker (as appropriate).</li>
-        </ul>
-
-        <h2><AlertTriangle className="inline-block mr-2 h-6 w-6 text-primary" />Challenges & Learnings</h2>
-        <p>
-          One of the main challenges during the development of &quot;{project.name}&quot; was 
-          {project.name.toLowerCase().includes('ai') ? 'optimizing the performance of AI model interactions and ensuring real-time responses.' : 
-           project.name.toLowerCase().includes('e-commerce') ? 'handling complex state logic for cart and checkout processes while ensuring data integrity.' :
-           project.name.toLowerCase().includes('dashboard') ? 'efficiently rendering large datasets and maintaining interactivity.' :
-           'ensuring cross-browser compatibility and optimizing for mobile devices.'}
-          Overcoming this involved extensive research, refactoring, and implementing advanced caching strategies. This project was a great learning experience in terms of 
-          {project.language === 'Python' ? 'working with large language models and asynchronous programming.' : 
-           project.language === 'Java' ? 'enterprise design patterns and microservices architecture.' :
-           'modern full-stack development practices and CI/CD pipelines.'}
-        </p>
-        
-        <div className="mt-10">
-          <Button asChild size="lg">
-            <a href={project.url} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="mr-2 h-5 w-5" />
-              View Project on GitHub
-            </a>
-          </Button>
-        </div>
+      {/* Project Content */}
+      <div className="prose prose-neutral dark:prose-invert max-w-none">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeHighlight, rehypeSlug]}
+          components={{
+            // Custom link handling
+            a: ({ href, children, ...props }) => {
+              const isExternal = href?.startsWith('http');
+              return (
+                <a
+                  href={href}
+                  target={isExternal ? '_blank' : undefined}
+                  rel={isExternal ? 'noopener noreferrer' : undefined}
+                  className="text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary/60 transition-colors"
+                  {...props}
+                >
+                  {children}
+                  {isExternal && <ExternalLink className="inline ml-1 h-3 w-3" />}
+                </a>
+              );
+            },
+            // Enhanced code blocks
+            pre: ({ children, ...props }) => (
+              <pre className="bg-muted p-4 rounded-lg overflow-x-auto border" {...props}>
+                {children}
+              </pre>
+            ),
+            code: ({ className, children, ...props }) => {
+              const isInline = !className;
+              return isInline ? (
+                <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                  {children}
+                </code>
+              ) : (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            },
+            // Enhanced headings
+            h1: ({ children, ...props }) => (
+              <h1 className="text-3xl font-bold mt-8 mb-4 text-foreground" {...props}>
+                {children}
+              </h1>
+            ),
+            h2: ({ children, ...props }) => (
+              <h2 className="text-2xl font-semibold mt-6 mb-3 text-foreground" {...props}>
+                {children}
+              </h2>
+            ),
+            h3: ({ children, ...props }) => (
+              <h3 className="text-xl font-medium mt-4 mb-2 text-foreground" {...props}>
+                {children}
+              </h3>
+            ),
+            // Enhanced tables
+            table: ({ children, ...props }) => (
+              <div className="overflow-x-auto my-4">
+                <table className="w-full border-collapse border border-border" {...props}>
+                  {children}
+                </table>
+              </div>
+            ),
+            th: ({ children, ...props }) => (
+              <th className="border border-border bg-muted p-2 text-left font-medium" {...props}>
+                {children}
+              </th>
+            ),
+            td: ({ children, ...props }) => (
+              <td className="border border-border p-2" {...props}>
+                {children}
+              </td>
+            ),
+            // Enhanced blockquotes
+            blockquote: ({ children, ...props }) => (
+              <blockquote className="border-l-4 border-primary pl-4 italic my-4 text-muted-foreground" {...props}>
+                {children}
+              </blockquote>
+            ),
+            // Enhanced lists
+            ul: ({ children, ...props }) => (
+              <ul className="list-disc pl-6 my-4 space-y-1" {...props}>
+                {children}
+              </ul>
+            ),
+            ol: ({ children, ...props }) => (
+              <ol className="list-decimal pl-6 my-4 space-y-1" {...props}>
+                {children}
+              </ol>
+            ),
+            li: ({ children, ...props }) => (
+              <li className="text-foreground" {...props}>
+                {children}
+              </li>
+            ),
+            // Enhanced paragraphs
+            p: ({ children, ...props }) => (
+              <p className="my-4 text-foreground leading-relaxed" {...props}>
+                {children}
+              </p>
+            ),
+            // Enhanced images
+            img: ({ src, alt, ...props }) => (
+              <div className="my-6">
+                <Image
+                  src={src || ''}
+                  alt={alt || ''}
+                  width={800}
+                  height={400}
+                  className="rounded-lg border border-border"
+                  {...props}
+                />
+              </div>
+            ),
+          }}
+        >
+          {projectData.content}
+        </ReactMarkdown>
       </div>
-    </article>
+    </div>
   );
 }
