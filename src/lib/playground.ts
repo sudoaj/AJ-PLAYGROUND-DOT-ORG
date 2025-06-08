@@ -29,7 +29,8 @@ export const playgroundProjects: PlaygroundProject[] = [
     shortDescription: 'Smart bill splitting and tip calculation',
     slug: 'tip-calculator',
     category: 'Utility',
-    comingSoonHint: 'Features will include bill splitting, service rating integration, and currency conversion.'
+    comingSoonHint: 'Features will include bill splitting, service rating integration, and currency conversion.',
+    isLive: true
   },
   {
     id: '4',

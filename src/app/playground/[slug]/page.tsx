@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getPlaygroundProject, getAllPlaygroundProjects } from '@/lib/playground';
 import ComingSoonAnimation from '@/components/ui/ComingSoonAnimation';
+import TipCalculator from '@/components/TipCalculator';
 import type { Metadata } from 'next';
 
 interface PlaygroundProjectPageProps {
@@ -40,6 +41,12 @@ export default async function PlaygroundProjectPage({ params }: PlaygroundProjec
     notFound();
   }
 
+  // Render the actual tip calculator if the slug matches
+  if (slug === 'tip-calculator') {
+    return <TipCalculator />;
+  }
+
+  // For all other projects, show coming soon animation
   return (
     <ComingSoonAnimation
       title={project.title}

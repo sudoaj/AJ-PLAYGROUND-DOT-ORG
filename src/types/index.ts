@@ -17,4 +17,5 @@ export interface PlaygroundProject {
   slug: string;
   category: string;
   comingSoonHint: string;
+  isLive?: boolean;
 }
