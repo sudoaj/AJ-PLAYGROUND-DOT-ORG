@@ -7,3 +7,15 @@ export interface BlogPost {
   slug: string; // For linking to full post (future)
   excerpt: string;
 }
+
+export interface PlaygroundProject {
+  id: string;
+  title: string;
+  emoji: string;
+  description: string;
+  shortDescription: string;
+  slug: string;
+  category: string;
+  comingSoonHint: string;
+  isLive?: boolean;
+}

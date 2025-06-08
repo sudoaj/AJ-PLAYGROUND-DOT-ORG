@@ -8,13 +8,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Menu, Download, ChevronDown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
-import { BlogPost } from '@/types';
+import { BlogPost, PlaygroundProject } from '@/types';
 import { Project } from '@/lib/projects';
 
 const navLinks = [
   { href: '/projects', label: 'Projects', hasDropdown: true },
   { href: '/blog', label: 'Blog', hasDropdown: true },
-  { href: '/playground', label: 'Playground', hasDropdown: false },
+  { href: '/playground', label: 'Playground', hasDropdown: true },
 ];
 
 export default function Header() {
@@ -23,6 +23,7 @@ export default function Header() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [playgroundProjects, setPlaygroundProjects] = useState<PlaygroundProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -32,9 +33,10 @@ export default function Header() {
 
   const loadData = async () => {
     try {
-      const [projectsResponse, postsResponse] = await Promise.all([
+      const [projectsResponse, postsResponse, playgroundResponse] = await Promise.all([
         fetch('/api/projects'),
-        fetch('/api/posts')
+        fetch('/api/posts'),
+        fetch('/api/playground')
       ]);
 
       if (projectsResponse.ok) {
@@ -45,6 +47,11 @@ export default function Header() {
       if (postsResponse.ok) {
         const postsData = await postsResponse.json();
         setBlogPosts(postsData);
+      }
+
+      if (playgroundResponse.ok) {
+        const playgroundData = await playgroundResponse.json();
+        setPlaygroundProjects(playgroundData);
       }
     } catch (error) {
       console.error('Error loading navigation data:', error);
@@ -141,6 +148,45 @@ const slugify = (text: string): string => {
                 <DropdownMenuItem asChild>
                   <Link href="/blog" className="w-full text-muted-foreground">
                     View More...
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    if (link.label === 'Playground') {
+      return (
+        <DropdownMenu key={link.href}>
+          <DropdownMenuTrigger className="flex items-center text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+            {link.label}
+            <ChevronDown className="ml-1 h-3 w-3" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-64">
+            <DropdownMenuItem asChild>
+              <Link href="/playground" className="w-full">
+                View All Projects
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <div className="grid grid-cols-2 gap-1 p-1">
+              {playgroundProjects.slice(0, 4).map((project) => (
+                <DropdownMenuItem key={project.slug} asChild className="p-2">
+                  <Link href={`/playground/${project.slug}`} className="w-full flex items-center gap-2 text-sm">
+                    <span className="text-lg">{project.emoji}</span>
+                    <span className="truncate">{project.title}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </div>
+            {playgroundProjects.length > 4 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/playground" className="w-full text-muted-foreground">
+                    View More Playground...
                   </Link>
                 </DropdownMenuItem>
               </>
@@ -252,6 +298,28 @@ const slugify = (text: string): string => {
                             <Button key={post.slug} variant="ghost" size="sm" asChild className="justify-start w-full text-xs">
                               <Link href={`/blog/${post.slug}`} onClick={() => setIsSheetOpen(false)}>
                                 {post.title}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (link.label === 'Playground') {
+                    return (
+                      <div key={link.href} className="space-y-2">
+                        <Button variant="ghost" asChild className="justify-start w-full">
+                          <Link href="/playground" onClick={() => setIsSheetOpen(false)}>
+                            All Playground
+                          </Link>
+                        </Button>
+                        <div className="pl-4 space-y-1">
+                          {playgroundProjects.slice(0, 4).map((project) => (
+                            <Button key={project.slug} variant="ghost" size="sm" asChild className="justify-start w-full text-xs">
+                              <Link href={`/playground/${project.slug}`} onClick={() => setIsSheetOpen(false)}>
+                                <span className="mr-2">{project.emoji}</span>
+                                {project.title}
                               </Link>
                             </Button>
                           ))}
