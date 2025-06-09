@@ -32,13 +32,17 @@ export default function PlaygroundCard({ project, showInteractButton = false }: 
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className={`w-2 h-2 rounded-full ${project.isLive ? 'bg-green-500' : 'bg-yellow-500'} animate-pulse`}></div>
-            {project.isLive ? 'Live Now' : 'Coming Soon'}
+            <div className={`w-2 h-2 rounded-full ${
+              project.isLive ? 'bg-green-500' : 
+              project.isAbandoned ? 'bg-red-500' : 
+              'bg-yellow-500'
+            } ${project.isAbandoned ? '' : 'animate-pulse'}`}></div>
+            {project.isLive ? 'Live Now' : project.isAbandoned ? 'Abandoned' : 'Coming Soon'}
           </div>
           {showInteractButton && (
             <Button size="sm" variant="outline" asChild className="group/btn">
               <Link href={`/playground/${project.slug}`}>
-                {project.isLive ? 'Try It Now' : 'Interact Now'}
+                {project.isLive ? 'Try It Now' : project.isAbandoned ? 'View Anyway' : 'Interact Now'}
                 <ArrowRight className="ml-1 h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
               </Link>
             </Button>
@@ -48,7 +52,7 @@ export default function PlaygroundCard({ project, showInteractButton = false }: 
           <div className="mt-4">
             <Button size="sm" variant="outline" asChild className="w-full">
               <Link href={`/playground/${project.slug}`}>
-                {project.isLive ? 'Try It Now' : 'View Project'}
+                {project.isLive ? 'Try It Now' : project.isAbandoned ? 'View Anyway' : 'View Project'}
                 <ArrowRight className="ml-1 h-3 w-3" />
               </Link>
             </Button>

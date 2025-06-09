@@ -18,4 +18,5 @@ export interface PlaygroundProject {
   category: string;
   comingSoonHint: string;
   isLive?: boolean;
+  isAbandoned?: boolean;
 }

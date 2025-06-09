@@ -41,6 +41,17 @@ export const playgroundProjects: PlaygroundProject[] = [
     slug: 'developer-cheatsheet',
     category: 'Tool',
     comingSoonHint: 'Will include syntax highlighting, interactive examples, and offline access to your favorite programming languages.'
+  },
+  {
+    id: '5',
+    title: 'Basic Calculator',
+    emoji: '🧮',
+    description: 'A simple calculator that was built as an early experiment. Basic arithmetic operations with a retro design.',
+    shortDescription: 'Simple arithmetic calculator (abandoned)',
+    slug: 'basic-calculator',
+    category: 'Tool',
+    comingSoonHint: 'This project has been abandoned in favor of more advanced tools.',
+    isAbandoned: true
   }
 ];
 

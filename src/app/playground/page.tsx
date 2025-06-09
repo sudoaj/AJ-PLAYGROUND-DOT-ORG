@@ -12,6 +12,11 @@ export const metadata: Metadata = {
 
 export default function PlaygroundPage() {
   const playgroundProjects = getAllPlaygroundProjects();
+  
+  // Separate projects by status
+  const liveProjects = playgroundProjects.filter(project => project.isLive && !project.isAbandoned);
+  const comingSoonProjects = playgroundProjects.filter(project => !project.isLive && !project.isAbandoned);
+  const abandonedProjects = playgroundProjects.filter(project => project.isAbandoned);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -33,11 +38,50 @@ export default function PlaygroundPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {playgroundProjects.map((project) => (
-          <PlaygroundCard key={project.id} project={project} />
-        ))}
-      </div>
+      {/* Live Projects */}
+      {liveProjects.length > 0 && (
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+            Live Projects
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {liveProjects.map((project) => (
+              <PlaygroundCard key={project.id} project={project} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Coming Soon Projects */}
+      {comingSoonProjects.length > 0 && (
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></div>
+            Coming Soon
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {comingSoonProjects.map((project) => (
+              <PlaygroundCard key={project.id} project={project} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Abandoned Projects */}
+      {abandonedProjects.length > 0 && (
+        <section>
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            Abandoned Projects
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {abandonedProjects.map((project) => (
+              <PlaygroundCard key={project.id} project={project} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
