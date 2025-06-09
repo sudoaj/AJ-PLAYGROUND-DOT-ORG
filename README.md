@@ -49,7 +49,26 @@ AJ-Playground is a Next.js-based personal portfolio and blog site that showcases
    npm run dev
    ```
 
-4. Open [http://localhost:9002](http://localhost:9002) in your browser
+4. Set up email notifications (optional):
+   ```bash
+   # Copy the environment variables template
+   cp .env.example .env.local
+   ```
+   
+   Then add your Resend API key to `.env.local`:
+   ```
+   RESEND_API_KEY=your_resend_api_key_here
+   ```
+   
+   **To get a Resend API key:**
+   1. Sign up at [resend.com](https://resend.com)
+   2. Go to [API Keys](https://resend.com/api-keys) 
+   3. Create a new API key
+   4. Add it to your `.env.local` file
+   
+   **Note:** Without the API key, newsletter subscriptions will fail, but the rest of the site will work normally.
+
+5. Open [http://localhost:9002](http://localhost:9002) in your browser
 
 ## Project Structure
 

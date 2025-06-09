@@ -21,6 +21,8 @@ export default function Footer() {
   const [currentTime, setCurrentTime] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscriptionMessage, setSubscriptionMessage] = useState("");
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
@@ -62,12 +64,37 @@ export default function Footer() {
     }
   };
 
-  const handleNewsletterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Placeholder for newsletter submission logic
-    alert("Thank you for subscribing! (This is a demo feature)");
+    setIsSubscribing(true);
+    setSubscriptionMessage("");
+    
     const form = e.target as HTMLFormElement;
-    form.reset();
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSubscriptionMessage("🎉 Thanks for subscribing! Check your email for a welcome message.");
+        form.reset();
+      } else {
+        setSubscriptionMessage(`❌ ${result.error || 'Something went wrong. Please try again.'}`);
+      }
+    } catch (error) {
+      setSubscriptionMessage("❌ Network error. Please check your connection and try again.");
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   return (
@@ -196,19 +223,32 @@ export default function Footer() {
             >
               <Input
                 type="email"
+                name="email"
                 placeholder="aj@example.com"
                 className="flex-grow bg-background/70 focus:bg-background"
                 aria-label="Email for newsletter"
                 required
+                disabled={isSubscribing}
               />
               <Button
                 type="submit"
                 variant="outline"
                 className="whitespace-nowrap"
+                disabled={isSubscribing}
               >
-                <Rss className="mr-2 h-4 w-4" /> Sub
+                <Rss className="mr-2 h-4 w-4" /> 
+                {isSubscribing ? "Subscribing..." : "Sub"}
               </Button>
             </form>
+            {subscriptionMessage && (
+              <p className={`text-xs mt-2 ${
+                subscriptionMessage.startsWith('🎉') 
+                  ? 'text-green-600' 
+                  : 'text-red-600'
+              }`}>
+                {subscriptionMessage}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground/70 mt-2">
               Unsubscribe anytime.
             </p>
