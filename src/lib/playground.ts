@@ -73,6 +73,18 @@ export const playgroundProjects: PlaygroundProject[] = [
     comingSoonHint: 'Features intelligent text rewriting, AI bullet point generation, and export to JSON/LaTeX formats.',
     isLive: true,
     isAbandoned: false,
+  },
+  {
+    id: '7',
+    title: 'Position Fit AI',
+    emoji: '🎯',
+    description: 'An AI-powered tool that analyzes job postings and intelligently tailors your resume to maximize your chances of landing interviews. Upload a job description and your resume to get detailed compatibility analysis and optimization suggestions.',
+    shortDescription: 'AI-powered job-resume compatibility analyzer',
+    slug: 'position-fit',
+    category: 'AI Tool',
+    comingSoonHint: 'Features job posting analysis, resume parsing, AI-powered matching, and intelligent resume optimization.',
+    isLive: true,
+    isAbandoned: false,
   }
 ];
 
