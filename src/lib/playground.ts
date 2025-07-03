@@ -9,7 +9,10 @@ export const playgroundProjects: PlaygroundProject[] = [
     shortDescription: 'Explore futuristic OS concepts with interactive animations',
     slug: 'future-os-visualizer',
     category: 'Visualization',
-    comingSoonHint: 'Expect stunning animations, gesture controls, and a peek into tomorrow\'s computing experience.'
+    comingSoonHint: 'Expect stunning animations, gesture controls, and a peek into tomorrow\'s computing experience.',
+    isLive: false,
+    isAbandoned: false
+
   },
   {
     id: '2',
@@ -19,7 +22,9 @@ export const playgroundProjects: PlaygroundProject[] = [
     shortDescription: 'Classic arcade games reimagined for the web',
     slug: 'retro-games',
     category: 'Gaming',
-    comingSoonHint: 'Get ready for Pong, Snake, Tetris, and more classics with pixel-perfect graphics and chiptune sounds.'
+    comingSoonHint: 'Get ready for Pong, Snake, Tetris, and more classics with pixel-perfect graphics and chiptune sounds.',
+    isLive: false,
+    isAbandoned: false
   },
   {
     id: '3',
@@ -30,7 +35,8 @@ export const playgroundProjects: PlaygroundProject[] = [
     slug: 'tip-calculator',
     category: 'Utility',
     comingSoonHint: 'Features will include bill splitting, service rating integration, and currency conversion.',
-    isLive: true
+    isLive: true,
+    isAbandoned: false
   },
   {
     id: '4',
@@ -40,7 +46,9 @@ export const playgroundProjects: PlaygroundProject[] = [
     shortDescription: 'Interactive reference guide for developers',
     slug: 'developer-cheatsheet',
     category: 'Tool',
-    comingSoonHint: 'Will include syntax highlighting, interactive examples, and offline access to your favorite programming languages.'
+    comingSoonHint: 'Will include syntax highlighting, interactive examples, and offline access to your favorite programming languages.',
+    isLive: false,
+    isAbandoned: false
   },
   {
     id: '5',
@@ -51,7 +59,8 @@ export const playgroundProjects: PlaygroundProject[] = [
     slug: 'basic-calculator',
     category: 'Tool',
     comingSoonHint: 'This project has been abandoned in favor of more advanced tools.',
-    isAbandoned: true
+    isLive: false,
+    isAbandoned: true,
   }
 ];
 
