@@ -3,6 +3,7 @@ import { getPlaygroundProject, getAllPlaygroundProjects } from '@/lib/playground
 import ComingSoonAnimation from '@/components/ui/ComingSoonAnimation';
 import TipCalculator from '@/components/TipCalculator';
 import BasicCalculator from '@/components/BasicCalculator';
+import ResumeBuilder from '@/components/ResumeBuilder';
 import type { Metadata } from 'next';
 
 interface PlaygroundProjectPageProps {
@@ -47,6 +48,8 @@ export default async function PlaygroundProjectPage({ params }: PlaygroundProjec
       return <TipCalculator />;
     case 'basic-calculator':
       return <BasicCalculator />;
+    case 'resume-builder':
+      return <ResumeBuilder />;
     default:
       break;
   }

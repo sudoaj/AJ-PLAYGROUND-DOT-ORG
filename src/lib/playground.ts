@@ -61,6 +61,18 @@ export const playgroundProjects: PlaygroundProject[] = [
     comingSoonHint: 'This project has been abandoned in favor of more advanced tools.',
     isLive: false,
     isAbandoned: true,
+  },
+  {
+    id: '6',
+    title: 'Resume Builder',
+    emoji: '📝',
+    description: 'An AI-powered resume builder that helps you create professional resumes with intelligent text rewriting, bullet point generation, and export to multiple formats.',
+    shortDescription: 'AI-powered resume creation and editing tool',
+    slug: 'resume-builder',
+    category: 'Tool',
+    comingSoonHint: 'Features intelligent text rewriting, AI bullet point generation, and export to JSON/LaTeX formats.',
+    isLive: true,
+    isAbandoned: false,
   }
 ];
 
