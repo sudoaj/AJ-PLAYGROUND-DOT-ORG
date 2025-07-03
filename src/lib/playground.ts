@@ -83,3 +83,11 @@ export function getPlaygroundProject(slug: string): PlaygroundProject | undefine
 export function getAllPlaygroundProjects(): PlaygroundProject[] {
   return playgroundProjects;
 }
+
+export function getActivePlaygroundProjects(): PlaygroundProject[] {
+  return playgroundProjects.filter(project => !project.isAbandoned);
+}
+
+export function getLivePlaygroundProjects(): PlaygroundProject[] {
+  return playgroundProjects.filter(project => project.isLive && !project.isAbandoned);
+}
