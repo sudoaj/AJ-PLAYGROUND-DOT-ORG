@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.log(`Newsletter subscription attempt: ${email} (Resend not configured)`);
       return NextResponse.json(
         { error: 'Newsletter service is not configured. Please try again later.' },
