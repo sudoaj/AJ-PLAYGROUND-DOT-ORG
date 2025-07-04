@@ -51,9 +51,11 @@ interface ParsedResume {
 
 interface ResumeUploaderProps {
   onResumeParsed: (resume: ParsedResume) => void;
+  apiKey?: string;
+  isApiKeyValid?: boolean;
 }
 
-export default function ResumeUploader({ onResumeParsed }: ResumeUploaderProps) {
+export default function ResumeUploader({ onResumeParsed, apiKey, isApiKeyValid }: ResumeUploaderProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
@@ -119,93 +121,154 @@ export default function ResumeUploader({ onResumeParsed }: ResumeUploaderProps) 
     setError(null);
 
     try {
-      // Simulate progressive parsing
-      const steps = [
-        { progress: 20, message: 'Reading file content...' },
-        { progress: 40, message: 'Extracting text...' },
-        { progress: 60, message: 'Identifying sections...' },
-        { progress: 80, message: 'Parsing details...' },
-        { progress: 100, message: 'Analysis complete!' }
-      ];
-
-      for (const step of steps) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setParseProgress(step.progress);
+      if (!apiKey || !isApiKeyValid) {
+        setError('API key required for resume parsing. Please configure your Gemini API key.');
+        return;
       }
 
-      // Mock parsed resume data
-      const mockResume: ParsedResume = {
-        personalInfo: {
-          name: 'John Doe',
-          email: 'john.doe@email.com',
-          phone: '+1 (555) 123-4567',
-          location: 'San Francisco, CA'
-        },
-        experience: [
-          {
-            title: 'Senior Frontend Developer',
-            company: 'Tech Solutions Inc.',
-            duration: '2021 - Present',
-            responsibilities: [
-              'Led development of React-based web applications',
-              'Collaborated with UX team to implement responsive designs',
-              'Mentored junior developers and conducted code reviews',
-              'Optimized application performance, reducing load times by 40%'
-            ]
-          },
-          {
-            title: 'Frontend Developer',
-            company: 'Digital Agency',
-            duration: '2019 - 2021',
-            responsibilities: [
-              'Built interactive web applications using JavaScript and React',
-              'Implemented modern CSS frameworks and responsive design',
-              'Worked with backend APIs and integrated third-party services',
-              'Participated in agile development processes'
-            ]
-          }
-        ],
-        education: [
-          {
-            degree: 'Bachelor of Science in Computer Science',
-            institution: 'University of California, Berkeley',
-            year: '2019'
-          }
-        ],
-        skills: [
-          {
-            category: 'Programming Languages',
-            skills: ['JavaScript', 'TypeScript', 'Python', 'Java']
-          },
-          {
-            category: 'Frontend Technologies',
-            skills: ['React', 'Next.js', 'Vue.js', 'HTML5', 'CSS3', 'Sass']
-          },
-          {
-            category: 'Tools & Platforms',
-            skills: ['Git', 'Docker', 'AWS', 'Webpack', 'Jest', 'Cypress']
-          }
-        ],
-        projects: [
-          {
-            name: 'E-commerce Platform',
-            description: 'Full-stack e-commerce solution with React frontend and Node.js backend',
-            technologies: ['React', 'Node.js', 'MongoDB', 'Stripe']
-          },
-          {
-            name: 'Task Management App',
-            description: 'Collaborative task management application with real-time updates',
-            technologies: ['Vue.js', 'Firebase', 'WebSocket', 'Tailwind CSS']
-          }
-        ]
-      };
+      // Step 1: Extract text from file
+      setParseProgress(20);
+      let extractedText = '';
 
-      setParsedResume(mockResume);
-      onResumeParsed(mockResume);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to parse resume');
+      if (file.type === 'application/pdf') {
+        // Import pdfjs-dist dynamically for client-side usage
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+        
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        
+        setParseProgress(40);
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(' ');
+          extractedText += pageText + '\n';
+        }
+      } else {
+        // For text files
+        extractedText = await file.text();
+        setParseProgress(40);
+      }
+
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error('No text could be extracted from the file');
+      }
+
+      // Step 2: Parse with AI
+      setParseProgress(60);
+      
+      const parsePrompt = `You are an expert resume parser. Parse the following resume text and extract structured information.
+
+RESUME TEXT:
+${extractedText}
+
+Extract and return ONLY valid JSON in this exact format:
+{
+  "personalInfo": {
+    "name": "Full Name",
+    "email": "email@example.com", 
+    "phone": "+1 (555) 123-4567",
+    "location": "City, State"
+  },
+  "experience": [
+    {
+      "title": "Job Title",
+      "company": "Company Name",
+      "duration": "Start - End",
+      "responsibilities": ["responsibility 1", "responsibility 2"]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Degree Type",
+      "institution": "School Name", 
+      "year": "Graduation Year"
+    }
+  ],
+  "skills": [
+    {
+      "category": "Category Name",
+      "skills": ["skill1", "skill2", "skill3"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Project Name",
+      "description": "Project description",
+      "technologies": ["tech1", "tech2"]
+    }
+  ]
+}
+
+IMPORTANT: Return ONLY the JSON object, no explanations or markdown formatting.`;
+
+      const response = await callGeminiAPI(parsePrompt);
+      const cleanedResponse = response.replace(/```json\n?|\n?```/g, '').trim();
+      const parsedData = JSON.parse(cleanedResponse);
+      
+      setParseProgress(100);
+      setParsedResume(parsedData);
+      onResumeParsed(parsedData);
+      
+    } catch (error: any) {
+      console.error('Resume parsing failed:', error);
+      setError(`Failed to parse resume: ${error.message}`);
     } finally {
       setIsParsing(false);
+    }
+  };
+
+  const callGeminiAPI = async (prompt: string): Promise<string> => {
+    if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
+      throw new Error('Invalid prompt provided');
+    }
+
+    if (!apiKey || apiKey.trim() === '') {
+      throw new Error('API key is required');
+    }
+
+    const chatHistory = [{ role: 'user', parts: [{ text: prompt }] }];
+    const payload = { contents: chatHistory };
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        let errorMessage = `API request failed with status ${response.status}`;
+        
+        if (response.status === 401) {
+          errorMessage = 'API key is invalid or expired';
+        } else if (response.status === 403) {
+          errorMessage = 'API access forbidden. Check your API key permissions';
+        } else if (response.status === 429) {
+          errorMessage = 'API quota exceeded or rate limit reached';
+        } else if (response.status >= 500) {
+          errorMessage = 'API server error. Please try again later';
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+
+      if (!result?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        throw new Error('Invalid response structure from API');
+      }
+
+      return result.candidates[0].content.parts[0].text.trim();
+    } catch (error: any) {
+      console.error('API call failed:', error);
+      throw error;
     }
   };
 
