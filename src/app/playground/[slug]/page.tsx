@@ -1,10 +1,9 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getPlaygroundProject, getAllPlaygroundProjects } from '@/lib/playground';
 import ComingSoonAnimation from '@/components/ui/ComingSoonAnimation';
 import TipCalculator from '@/components/TipCalculator';
 import BasicCalculator from '@/components/BasicCalculator';
 import ResumeBuilder from '@/components/ResumeBuilder';
-import PositionFit from '@/components/position-fit/PositionFit';
 import type { Metadata } from 'next';
 
 interface PlaygroundProjectPageProps {
@@ -52,7 +51,8 @@ export default async function PlaygroundProjectPage({ params }: PlaygroundProjec
     case 'resume-builder':
       return <ResumeBuilder />;
     case 'position-fit':
-      return <PositionFit />;
+      // Redirect to the new position-fit route structure
+      redirect('/playground/position-fit');
     default:
       break;
   }

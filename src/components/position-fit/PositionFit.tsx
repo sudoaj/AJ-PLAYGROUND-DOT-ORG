@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,7 @@ import JobAnalyzer from './JobAnalyzer';
 import ResumeUploader from './ResumeUploader';
 import MatchingResults from './MatchingResults';
 import ResumeOptimizer from './ResumeOptimizer';
+import JobDashboard, { JobAnalysis, UserData } from './JobDashboard';
 
 interface JobPosting {
   title: string;
@@ -109,6 +111,9 @@ interface OptimizedResume extends ParsedResume {
 }
 
 export default function PositionFit() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [currentView, setCurrentView] = useState<'dashboard' | 'analysis'>('dashboard');
   const [currentStep, setCurrentStep] = useState<'job' | 'resume' | 'analysis' | 'optimization'>('job');
   const [jobPosting, setJobPosting] = useState<JobPosting | null>(null);
   const [showJobDetails, setShowJobDetails] = useState<boolean>(false);
@@ -117,6 +122,11 @@ export default function PositionFit() {
   const [optimizedResume, setOptimizedResume] = useState<OptimizedResume | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [viewingAnalysis, setViewingAnalysis] = useState<JobAnalysis | null>(null);
+  
+  // User state management
+  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   // AI Configuration
   const [geminiApiKey, setGeminiApiKey] = useState<string>('');
@@ -384,12 +394,124 @@ IMPORTANT: Return ONLY valid JSON, no explanations or markdown formatting.`;
     }
   };
 
+  // Get step status with loading states
   const getStepStatus = (step: string) => {
-    if (step === 'job') return jobPosting ? 'completed' : currentStep === 'job' ? 'active' : 'pending';
-    if (step === 'resume') return resume ? 'completed' : currentStep === 'resume' ? 'active' : 'pending';
-    if (step === 'analysis') return analysis ? 'completed' : currentStep === 'analysis' ? 'active' : 'pending';
-    if (step === 'optimization') return optimizedResume ? 'completed' : currentStep === 'optimization' ? 'active' : 'pending';
-    return 'pending';
+    if (viewingAnalysis) {
+      // When viewing a saved analysis, show it as completed
+      return 'completed';
+    }
+    
+    // Check for loading states
+    if (step === 'analysis' && isAnalyzing) {
+      return 'loading';
+    }
+    if (step === 'optimization' && isOptimizing) {
+      return 'loading';
+    }
+    
+    const stepOrder = ['job', 'resume', 'analysis', 'optimization'];
+    const currentStepIndex = stepOrder.indexOf(currentStep);
+    const stepIndex = stepOrder.indexOf(step);
+    
+    if (stepIndex < currentStepIndex) {
+      return 'completed';
+    } else if (stepIndex === currentStepIndex) {
+      return 'active';
+    } else {
+      return 'pending';
+    }
+  };
+
+  // Check if a step is accessible (clickable)
+  const isStepAccessible = (stepKey: string) => {
+    if (viewingAnalysis) {
+      return true; // All steps are accessible when viewing saved analysis
+    }
+    
+    // Users can always go back to previous steps or stay on current step
+    // They can also jump to future steps if they have the required data
+    switch (stepKey) {
+      case 'job':
+        return true; // Always accessible
+      case 'resume':
+        return jobPosting !== null; // Accessible if job is analyzed
+      case 'analysis':
+        return jobPosting !== null && resume !== null; // Accessible if both job and resume are ready
+      case 'optimization':
+        return jobPosting !== null && resume !== null && analysis !== null; // Accessible if analysis is done
+      default:
+        return false;
+    }
+  };
+
+  // Get helpful tooltip text for each step
+  const getStepTooltip = (stepKey: string) => {
+    if (viewingAnalysis) {
+      return `View ${stepKey} details`;
+    }
+    
+    // Handle loading states
+    if (stepKey === 'analysis' && isAnalyzing) {
+      return 'AI is analyzing compatibility...';
+    }
+    if (stepKey === 'optimization' && isOptimizing) {
+      return 'AI is optimizing resume...';
+    }
+    
+    const isAccessible = isStepAccessible(stepKey);
+    
+    if (isAccessible) {
+      switch (stepKey) {
+        case 'job':
+          return 'Analyze job posting';
+        case 'resume':
+          return 'Upload and parse resume';
+        case 'analysis':
+          return analysis ? 'View compatibility analysis' : 'Start AI compatibility analysis';
+        case 'optimization':
+          return optimizedResume ? 'View optimized resume' : 'Generate optimized resume';
+        default:
+          return `Go to ${stepKey}`;
+      }
+    } else {
+      switch (stepKey) {
+        case 'resume':
+          return 'Complete job analysis first';
+        case 'analysis':
+          return 'Complete job analysis and resume upload first';
+        case 'optimization':
+          return 'Complete analysis first';
+        default:
+          return `Complete previous steps to access ${stepKey}`;
+      }
+    }
+  };
+
+  // Handle step navigation click
+  const handleStepClick = (stepKey: string) => {
+    if (!isStepAccessible(stepKey)) {
+      return; // Don't navigate if step is not accessible
+    }
+    
+    // Special handling for analysis step
+    if (stepKey === 'analysis') {
+      if (jobPosting && resume && !analysis) {
+        // Auto-trigger analysis if data is ready but analysis hasn't been performed
+        performAnalysis(jobPosting, resume);
+        return;
+      }
+    }
+    
+    // Special handling for optimization step
+    if (stepKey === 'optimization') {
+      if (jobPosting && resume && analysis && !optimizedResume) {
+        // Auto-trigger optimization if data is ready but optimization hasn't been performed
+        handleOptimizeResume();
+        return;
+      }
+    }
+    
+    setCurrentStep(stepKey as 'job' | 'resume' | 'analysis' | 'optimization');
   };
 
   const resetAnalysis = () => {
@@ -400,27 +522,381 @@ IMPORTANT: Return ONLY valid JSON, no explanations or markdown formatting.`;
     setCurrentStep('job');
   };
 
+  // Dashboard functions
+  const handleStartAnalysis = () => {
+    // Only start analysis if user is logged in
+    if (!currentUser) {
+      alert('Please login first to start an analysis');
+      return;
+    }
+    setCurrentView('analysis');
+    setCurrentStep('job');
+    setJobPosting(null);
+    setResume(null);
+    setAnalysis(null);
+    setOptimizedResume(null);
+    setViewingAnalysis(null);
+    setAnalysisAlreadySaved(false); // Reset saved flag for new analysis
+  };
+
+  const handleViewAnalysis = (analysisData: JobAnalysis) => {
+    setViewingAnalysis(analysisData);
+    setCurrentView('analysis');
+    
+    // Restore full state from the saved analysis
+    if (analysisData.jobPosting) {
+      setJobPosting(analysisData.jobPosting);
+    } else {
+      // Fallback: Convert JobAnalysis back to component state
+      const jobPosting: JobPosting = {
+        title: analysisData.jobTitle,
+        company: analysisData.company,
+        location: analysisData.location,
+        requirements: {
+          required: analysisData.requirements,
+          preferred: [],
+          experience: ''
+        },
+        responsibilities: analysisData.responsibilities,
+        benefits: analysisData.benefits,
+        jobType: 'full-time' as const,
+        _sourceUrl: analysisData.jobUrl,
+        _rawContent: analysisData.jobDescription
+      };
+      setJobPosting(jobPosting);
+    }
+    
+    if (analysisData.resume) {
+      setResume(analysisData.resume);
+    }
+    
+    if (analysisData.analysis) {
+      setAnalysis(analysisData.analysis);
+    } else {
+      // Fallback: Convert JobAnalysis back to MatchingAnalysis
+      const analysis: MatchingAnalysis = {
+        overallScore: analysisData.matchScore,
+        categoryScores: {
+          skills: analysisData.matchScore,
+          experience: analysisData.matchScore,
+          education: analysisData.matchScore,
+          projects: analysisData.matchScore
+        },
+        strengths: analysisData.strengths,
+        gaps: analysisData.gaps,
+        recommendations: {
+          skillsToHighlight: [],
+          experienceToEmphasize: [],
+          suggestedModifications: analysisData.recommendations
+        }
+      };
+      setAnalysis(analysis);
+    }
+    
+    if (analysisData.optimizedResume) {
+      setOptimizedResume(analysisData.optimizedResume);
+    }
+    
+    // Restore the correct step
+    setCurrentStep(analysisData.currentStep || 'analysis');
+    setAnalysisAlreadySaved(true); // Mark as already saved to prevent duplicate saves
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+    setViewingAnalysis(null);
+    setCurrentStep('job'); // Reset to initial step
+    
+    // Clear URL parameters to prevent the useEffect from overriding the view
+    const url = new URL(window.location.href);
+    url.searchParams.delete('continue');
+    url.searchParams.delete('step');
+    router.replace(url.pathname + url.search);
+  };
+
+  const saveJobAnalysis = (job: JobPosting, analysis?: MatchingAnalysis, stepOverride?: 'job' | 'resume' | 'analysis' | 'optimization') => {
+    if (!currentUser) {
+      alert('Please login to save analysis');
+      return;
+    }
+
+    // Check if this analysis already exists (prevent duplicates)
+    const existingAnalysis = currentUser.analyses.find(a => 
+      a.jobTitle === job.title && 
+      a.company === job.company && 
+      a.jobUrl === job._sourceUrl
+    );
+    
+    if (existingAnalysis) {
+      // Update existing analysis instead of creating duplicate
+      const updatedAnalysis: JobAnalysis = {
+        ...existingAnalysis,
+        currentStep: stepOverride || currentStep,
+        jobPosting: job,
+        resume: resume,
+        analysis: analysis,
+        optimizedResume: optimizedResume,
+        matchScore: analysis?.overallScore || existingAnalysis.matchScore,
+        strengths: analysis?.strengths || existingAnalysis.strengths,
+        gaps: analysis?.gaps || existingAnalysis.gaps,
+        recommendations: analysis?.recommendations.suggestedModifications || existingAnalysis.recommendations,
+        resumeOptimized: !!optimizedResume,
+        analyzedAt: new Date().toISOString()
+      };
+
+      // Replace the existing analysis
+      const updatedUser = {
+        ...currentUser,
+        analyses: currentUser.analyses.map(a => a.id === existingAnalysis.id ? updatedAnalysis : a),
+        lastActive: new Date().toISOString()
+      };
+
+      saveUserData(updatedUser);
+      return updatedAnalysis;
+    }
+
+    // Create new analysis
+    const jobAnalysis: JobAnalysis = {
+      id: `analysis-${Date.now()}`,
+      jobTitle: job.title,
+      company: job.company,
+      location: job.location,
+      salary: job.salary ? `${job.salary.currency} ${job.salary.min}-${job.salary.max}` : undefined,
+      jobUrl: job._sourceUrl,
+      jobDescription: job._rawContent || '',
+      requirements: job.requirements.required,
+      responsibilities: job.responsibilities,
+      benefits: job.benefits,
+      matchScore: analysis?.overallScore || 0,
+      strengths: analysis?.strengths || [],
+      gaps: analysis?.gaps || [],
+      recommendations: analysis?.recommendations.suggestedModifications || [],
+      analyzedAt: new Date().toISOString(),
+      resumeOptimized: !!optimizedResume,
+      // Full state restoration data
+      currentStep: stepOverride || currentStep,
+      jobPosting: job,
+      resume: resume,
+      analysis: analysis,
+      optimizedResume: optimizedResume
+    };
+
+    // Add analysis to current user's data
+    const updatedUser = {
+      ...currentUser,
+      analyses: [...currentUser.analyses, jobAnalysis],
+      lastActive: new Date().toISOString()
+    };
+
+    saveUserData(updatedUser);
+    return jobAnalysis;
+  };
+
+  const handleSaveJobAnalysis = () => {
+    if (jobPosting) {
+      const savedAnalysis = saveJobAnalysis(jobPosting, analysis || undefined);
+      if (savedAnalysis) {
+        alert('Job analysis saved to dashboard!');
+        setAnalysisAlreadySaved(true);
+      }
+    }
+  };
+
+  // User management functions
+  const loadUserData = (id: string): UserData | null => {
+    try {
+      const stored = localStorage.getItem(`position-fit-user-${id}`);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      return null;
+    }
+  };
+
+  const saveUserData = (data: UserData) => {
+    try {
+      localStorage.setItem(`position-fit-user-${data.userId}`, JSON.stringify(data));
+      setCurrentUser(data); // Update current user state
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
+  };
+
+  const handleUserLogin = (userData: UserData) => {
+    setCurrentUser(userData);
+    setIsLoggedIn(true);
+  };
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const lastUserId = localStorage.getItem('position-fit-last-user');
+    if (lastUserId) {
+      const userData = loadUserData(lastUserId);
+      if (userData) {
+        setCurrentUser(userData);
+        setIsLoggedIn(true);
+      }
+    }
+  }, []);
+
+  // Handle URL parameters for continuing analysis
+  useEffect(() => {
+    const continueAnalysisId = searchParams.get('continue');
+    const targetStep = searchParams.get('step') as 'job' | 'resume' | 'analysis' | 'optimization' | null;
+    
+    if (continueAnalysisId && currentUser) {
+      const analysisData = currentUser.analyses.find(a => a.id === continueAnalysisId);
+      if (analysisData) {
+        // Restore the analysis state
+        setViewingAnalysis(analysisData);
+        setCurrentView('analysis');
+        
+        // Restore all the state data
+        if (analysisData.jobPosting) {
+          setJobPosting(analysisData.jobPosting);
+        } else {
+          // Fallback: Convert JobAnalysis back to component state
+          const jobPosting: JobPosting = {
+            title: analysisData.jobTitle,
+            company: analysisData.company,
+            location: analysisData.location,
+            requirements: {
+              required: analysisData.requirements,
+              preferred: [],
+              experience: ''
+            },
+            responsibilities: analysisData.responsibilities,
+            benefits: analysisData.benefits,
+            jobType: 'full-time' as const,
+            _sourceUrl: analysisData.jobUrl,
+            _rawContent: analysisData.jobDescription
+          };
+          setJobPosting(jobPosting);
+        }
+        
+        if (analysisData.resume) {
+          setResume(analysisData.resume);
+        }
+        
+        if (analysisData.analysis) {
+          setAnalysis(analysisData.analysis);
+        } else {
+          // Fallback: Convert JobAnalysis back to MatchingAnalysis
+          const analysis: MatchingAnalysis = {
+            overallScore: analysisData.matchScore,
+            categoryScores: {
+              skills: analysisData.matchScore,
+              experience: analysisData.matchScore,
+              education: analysisData.matchScore,
+              projects: analysisData.matchScore
+            },
+            strengths: analysisData.strengths,
+            gaps: analysisData.gaps,
+            recommendations: {
+              skillsToHighlight: [],
+              experienceToEmphasize: [],
+              suggestedModifications: analysisData.recommendations
+            }
+          };
+          setAnalysis(analysis);
+        }
+        
+        if (analysisData.optimizedResume) {
+          setOptimizedResume(analysisData.optimizedResume);
+        }
+        
+        // Set the target step or use the saved step
+        setCurrentStep(targetStep || analysisData.currentStep || 'job');
+        setAnalysisAlreadySaved(true);
+      }
+    }
+  }, [searchParams, currentUser]);
+
+  // Save last user ID
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('position-fit-last-user', currentUser.userId);
+    }
+  }, [currentUser]);
+
+  // Auto-save analysis when completed (only once)
+  const [analysisAlreadySaved, setAnalysisAlreadySaved] = useState(false);
+  
+  useEffect(() => {
+    if (analysis && jobPosting && !viewingAnalysis && currentUser && !analysisAlreadySaved) {
+      saveJobAnalysis(jobPosting, analysis);
+      setAnalysisAlreadySaved(true);
+    }
+  }, [analysis, jobPosting, viewingAnalysis, currentUser, analysisAlreadySaved]);
+
+  // Reset saved flag when starting new analysis
+  useEffect(() => {
+    if (currentStep === 'job' && !viewingAnalysis) {
+      setAnalysisAlreadySaved(false);
+    }
+  }, [currentStep, viewingAnalysis]);
+
+  // Save state when user progresses through steps
+  useEffect(() => {
+    if (currentUser && jobPosting && !viewingAnalysis) {
+      // Save progress at each step
+      saveJobAnalysis(jobPosting, analysis || undefined, currentStep);
+    }
+  }, [currentStep, currentUser, jobPosting, viewingAnalysis]);
+
+  // Save when optimization is completed
+  useEffect(() => {
+    if (currentUser && jobPosting && optimizedResume && !viewingAnalysis) {
+      saveJobAnalysis(jobPosting, analysis || undefined, 'optimization');
+    }
+  }, [optimizedResume, currentUser, jobPosting, viewingAnalysis]);
+
+  // Show dashboard if not viewing analysis
+  if (currentView === 'dashboard') {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <JobDashboard
+          onStartAnalysis={handleStartAnalysis}
+          onViewAnalysis={handleViewAnalysis}
+          onUserLogin={handleUserLogin}
+          currentUser={currentUser}
+          isLoggedIn={isLoggedIn}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-green-50 dark:from-blue-950/20 dark:via-background dark:to-green-950/20">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Link href="/playground" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Playground
-            </Link>
+          <div className="flex items-center justify-end mb-4">
             <Badge variant="secondary" className="bg-gradient-to-r from-blue-500 to-green-500 text-white">
               AI-Powered
             </Badge>
           </div>
           
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-              Position Fit AI 🎯
-            </h1>
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <Button
+                variant="outline"
+                onClick={handleBackToDashboard}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Dashboard
+              </Button>
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                Position Fit AI 🎯
+              </h1>
+              <div className="w-32" /> {/* Spacer for balance */}
+            </div>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Analyze job postings and intelligently tailor your resume to maximize your chances of landing interviews
+              {viewingAnalysis ? 'Viewing saved analysis' : 'Analyze job postings and intelligently tailor your resume to maximize your chances of landing interviews'}
             </p>
           </div>
 
@@ -433,25 +909,44 @@ IMPORTANT: Return ONLY valid JSON, no explanations or markdown formatting.`;
               { key: 'optimization', label: 'Optimization', icon: TrendingUp }
             ].map((step, index) => {
               const status = getStepStatus(step.key);
+              const isAccessible = isStepAccessible(step.key);
               const Icon = step.icon;
               
               return (
                 <div key={step.key} className="flex items-center">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                    status === 'completed' ? 'bg-green-500 border-green-500 text-white' :
-                    status === 'active' ? 'bg-blue-500 border-blue-500 text-white' :
-                    'bg-muted border-muted-foreground/20 text-muted-foreground'
-                  }`}>
+                  <div 
+                    className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-200 ${
+                      status === 'completed' ? 'bg-green-500 border-green-500 text-white' :
+                      status === 'active' ? 'bg-blue-500 border-blue-500 text-white' :
+                      status === 'loading' ? 'bg-yellow-500 border-yellow-500 text-white animate-pulse' :
+                      'bg-muted border-muted-foreground/20 text-muted-foreground'
+                    } ${
+                      isAccessible && status !== 'loading' ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : 'cursor-not-allowed opacity-50'
+                    }`}
+                    onClick={() => status !== 'loading' && handleStepClick(step.key)}
+                    title={getStepTooltip(step.key)}
+                  >
                     {status === 'completed' ? (
                       <CheckCircle className="w-5 h-5" />
+                    ) : status === 'loading' ? (
+                      <Icon className="w-5 h-5 animate-spin" />
                     ) : (
                       <Icon className="w-5 h-5" />
                     )}
                   </div>
-                  <span className={`ml-2 text-sm font-medium ${
-                    status === 'active' ? 'text-foreground' : 'text-muted-foreground'
-                  }`}>
+                  <span 
+                    className={`ml-2 text-sm font-medium transition-colors duration-200 ${
+                      status === 'active' ? 'text-foreground' : 
+                      status === 'loading' ? 'text-yellow-600' : 
+                      'text-muted-foreground'
+                    } ${
+                      isAccessible && status !== 'loading' ? 'cursor-pointer hover:text-foreground' : 'cursor-not-allowed'
+                    }`}
+                    onClick={() => status !== 'loading' && handleStepClick(step.key)}
+                    title={getStepTooltip(step.key)}
+                  >
                     {step.label}
+                    {status === 'loading' && <span className="ml-1">...</span>}
                   </span>
                   {index < 3 && (
                     <div className={`w-8 h-px mx-4 ${
@@ -520,6 +1015,21 @@ IMPORTANT: Return ONLY valid JSON, no explanations or markdown formatting.`;
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     Job Analysis Complete
                   </CardTitle>
+                  <div className="flex items-center gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSaveJobAnalysis}
+                      className="flex items-center gap-2"
+                      disabled={!currentUser}
+                    >
+                      <Download className="w-4 h-4" />
+                      Save Analysis
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {currentUser ? 'Save this job analysis to your dashboard' : 'Login required to save analysis'}
+                    </span>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {/* Basic Job Info - Always Visible */}
