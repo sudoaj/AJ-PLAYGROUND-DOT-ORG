@@ -50,9 +50,6 @@ export default async function PlaygroundProjectPage({ params }: PlaygroundProjec
       return <BasicCalculator />;
     case 'resume-builder':
       return <ResumeBuilder />;
-    case 'position-fit':
-      // Redirect to the new position-fit route structure
-      redirect('/playground/position-fit');
     default:
       break;
   }
