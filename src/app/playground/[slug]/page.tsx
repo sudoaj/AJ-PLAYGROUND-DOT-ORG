@@ -14,9 +14,11 @@ interface PlaygroundProjectPageProps {
 
 export async function generateStaticParams() {
   const projects = getAllPlaygroundProjects();
-  return projects.map((project) => ({
-    slug: project.slug,
-  }));
+  return projects
+    .filter(project => project.slug !== 'position-fit') // Exclude position-fit as it has its own dedicated route
+    .map((project) => ({
+      slug: project.slug,
+    }));
 }
 
 export async function generateMetadata({ params }: PlaygroundProjectPageProps): Promise<Metadata> {
