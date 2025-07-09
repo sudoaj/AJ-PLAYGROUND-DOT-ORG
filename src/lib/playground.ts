@@ -23,7 +23,7 @@ export const playgroundProjects: PlaygroundProject[] = [
     slug: 'retro-games',
     category: 'Gaming',
     comingSoonHint: 'Get ready for Pong, Snake, Tetris, and more classics with pixel-perfect graphics and chiptune sounds.',
-    isLive: false,
+    isLive: true,
     isAbandoned: false
   },
   {
