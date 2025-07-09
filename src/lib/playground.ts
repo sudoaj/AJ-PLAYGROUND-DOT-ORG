@@ -47,7 +47,7 @@ export const playgroundProjects: PlaygroundProject[] = [
     slug: 'developer-cheatsheet',
     category: 'Tool',
     comingSoonHint: 'Will include syntax highlighting, interactive examples, and offline access to your favorite programming languages.',
-    isLive: false,
+    isLive: true,
     isAbandoned: false
   },
   {
