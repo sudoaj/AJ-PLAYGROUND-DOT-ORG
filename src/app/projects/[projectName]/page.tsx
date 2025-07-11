@@ -66,15 +66,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       {/* Project Header */}
       <header className="mb-8">
         <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="relative w-full md:w-80 h-48 overflow-hidden rounded-lg">
-            <Image
-              src={projectData.imageUrl}
-              alt={projectData.imageHint}
-              fill
-              className="object-cover"
-            />
+          <div className="relative w-full md:w-80 h-48 overflow-hidden rounded-lg bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-4 flex items-center justify-center">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent_50%)] opacity-50"></div>
+            <div className="relative z-10 text-white text-center">
+              <div className="text-3xl font-bold mb-2">{projectData.title.split(' ').map(word => word[0]).join('')}</div>
+              <div className="text-sm opacity-80">{projectData.language}</div>
+            </div>
           </div>
-          <div className="flex-1">
+          <div className="flex-1"></div>
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               {projectData.title}
             </h1>
@@ -244,12 +243,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             // Enhanced images
             img: ({ src, alt, ...props }) => (
               <div className="my-6">
-                <Image
+                <img
                   src={src || ''}
                   alt={alt || ''}
-                  width={800}
-                  height={400}
-                  className="rounded-lg border border-border"
+                  className="w-full rounded-lg border border-border"
                   {...props}
                 />
               </div>
