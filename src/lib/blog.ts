@@ -17,7 +17,7 @@ export function getAllBlogPosts(): BlogPost[] {
 
       // Validate that all required BlogPost fields are present in frontmatter
       // or can be derived. 'id' will be the slug.
-      if (!data.title || !data.date || !slug || !data.excerpt || !data.imageUrl || !data.imageHint) {
+      if (!data.title || !data.date || !slug || !data.excerpt) {
         console.warn(`Skipping ${fileName} due to missing frontmatter fields.`);
         return null;
       }
@@ -28,8 +28,6 @@ export function getAllBlogPosts(): BlogPost[] {
         title: data.title,
         date: data.date,
         excerpt: data.excerpt,
-        imageUrl: data.imageUrl,
-        imageHint: data.imageHint,
       } as BlogPost; // Type assertion
     });
 
@@ -49,7 +47,7 @@ export function getBlogPostBySlug(slug: string): BlogPostWithContent | null {
     const { data, content } = matter(fileContents);
 
     // Validate required fields
-    if (!data.title || !data.date || !slug || !data.excerpt || !data.imageUrl || !data.imageHint) {
+    if (!data.title || !data.date || !slug || !data.excerpt) {
       console.error(`Error processing ${slug}.md: Missing frontmatter fields.`);
       return null;
     }
@@ -61,8 +59,6 @@ export function getBlogPostBySlug(slug: string): BlogPostWithContent | null {
       title: data.title,
       date: data.date,
       excerpt: data.excerpt,
-      imageUrl: data.imageUrl,
-      imageHint: data.imageHint,
       content: content, // Raw markdown content
     } as BlogPostWithContent; // Type assertion
   } catch (error) {

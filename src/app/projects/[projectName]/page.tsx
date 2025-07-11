@@ -1,6 +1,6 @@
 import { getProjectBySlug, getAllProjects } from '@/lib/projects';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
+
 import ReactMarkdown from 'react-markdown';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, CalendarDays, ExternalLink, Briefcase, Code, CheckCircle, AlertTriangle } from 'lucide-react';

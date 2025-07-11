@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+
 import AnimatedSvgBackground from '@/components/ui/AnimatedSvgBackground';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, ArrowLeft, ArrowRight, Play, Pause, Code, Rocket, Coffee } from 'lucide-react';

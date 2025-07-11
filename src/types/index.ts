@@ -1,8 +1,8 @@
 export interface BlogPost {
   id: string;
+  slug: string;
   title: string;
-  date: string; // Could be YYYY or full date string
-  slug: string; // For linking to full post (future)
+  date: string;
   excerpt: string;
 }
 
