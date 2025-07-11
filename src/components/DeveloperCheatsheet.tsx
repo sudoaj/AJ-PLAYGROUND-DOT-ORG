@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -8,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { 
   Search, 
   Copy, 
@@ -21,1183 +21,651 @@ import {
   ArrowLeft,
   Book,
   Zap,
-  Settings
+  Settings,
+  Eye
 } from 'lucide-react';
 import Link from 'next/link';
 
 interface CheatItem {
-  title: string;
+  command: string;
   description: string;
-  code: string;
-  category: string;
-  tags: string[];
+  example?: string;
+  scenario: string;
 }
 
 interface CheatCategory {
-  id: string;
   name: string;
-  icon: React.ReactNode;
-  items: CheatItem[];
+  entries: CheatItem[];
+}
+
+interface CheatSheet {
+  title: string;
+  categories: CheatCategory[];
+}
+
+interface CheatData {
+  [key: string]: CheatSheet;
 }
 
 export default function DeveloperCheatsheet() {
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState('javascript');
+  const [selectedCategory, setSelectedCategory] = useState('allCommands');
+  const [selectedCommand, setSelectedCommand] = useState<CheatItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const cheatData: CheatCategory[] = [
-    {
-      id: 'javascript',
-      name: 'JavaScript',
-      icon: <Code className="w-4 h-4" />,
-      items: [
+  const originalCheatData: CheatData = {
+    git: {
+      title: "Git",
+      categories: [
         {
-          title: 'Array Methods',
-          description: 'Common array manipulation methods',
-          code: `// Map, Filter, Reduce
-const numbers = [1, 2, 3, 4, 5];
-
-// Map - transform each element
-const doubled = numbers.map(n => n * 2);
-
-// Filter - select elements
-const evens = numbers.filter(n => n % 2 === 0);
-
-// Reduce - accumulate values
-const sum = numbers.reduce((acc, n) => acc + n, 0);
-
-// Find - get first match
-const found = numbers.find(n => n > 3);
-
-// Some/Every - boolean checks
-const hasEven = numbers.some(n => n % 2 === 0);
-const allPositive = numbers.every(n => n > 0);`,
-          category: 'arrays',
-          tags: ['arrays', 'methods', 'functional']
+          name: "Setup & Configuration",
+          entries: [
+            { 
+              command: "git config --global user.name \"[name]\"", 
+              description: "Set your username globally for all repositories.", 
+              example: "git config --global user.name \"Your Name\"", 
+              scenario: "First-time Git setup on a new machine." 
+            },
+            { 
+              command: "git config --global user.email \"[email]\"", 
+              description: "Set your email globally for all repositories.", 
+              example: "git config --global user.email \"youremail@example.com\"", 
+              scenario: "First-time Git setup on a new machine." 
+            },
+            { 
+              command: "git config --list", 
+              description: "List all Git configurations.", 
+              example: "git config --list", 
+              scenario: "Verifying current Git settings." 
+            },
+          ]
         },
         {
-          title: 'Promises & Async/Await',
-          description: 'Handling asynchronous operations',
-          code: `// Promise syntax
-function fetchData() {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => resolve('Data loaded'), 1000);
-  });
-}
-
-// Async/Await
-async function loadData() {
-  try {
-    const data = await fetchData();
-    console.log(data);
-  } catch (error) {
-    console.error('Error:', error);
-  }
-}
-
-// Promise.all for parallel execution
-const promises = [fetch('/api/1'), fetch('/api/2')];
-const results = await Promise.all(promises);
-
-// Promise.allSettled for error handling
-const settled = await Promise.allSettled(promises);`,
-          category: 'async',
-          tags: ['promises', 'async', 'await', 'fetch']
+          name: "Basic Commands",
+          entries: [
+            { 
+              command: "git init", 
+              description: "Initialize a new Git repository.", 
+              example: "git init my-project", 
+              scenario: "Starting a new project from scratch." 
+            },
+            { 
+              command: "git clone [url]", 
+              description: "Clone an existing repository.", 
+              example: "git clone https://github.com/user/repo.git", 
+              scenario: "Getting a copy of an existing project." 
+            },
+            { 
+              command: "git status", 
+              description: "Show the working tree status.", 
+              example: "git status", 
+              scenario: "Checking what changes are ready to be committed." 
+            },
+            { 
+              command: "git add [file]", 
+              description: "Add file contents to the staging area.", 
+              example: "git add index.html", 
+              scenario: "Preparing a specific file for commit." 
+            },
+            { 
+              command: "git commit -m \"[message]\"", 
+              description: "Record changes with a descriptive message.", 
+              example: "git commit -m \"Add initial project structure\"", 
+              scenario: "Saving your staged changes." 
+            },
+            { 
+              command: "git push origin [branch]", 
+              description: "Upload local repository content to remote.", 
+              example: "git push origin main", 
+              scenario: "Sharing your commits with the remote repository." 
+            },
+            { 
+              command: "git pull origin [branch]", 
+              description: "Fetch and merge changes from remote.", 
+              example: "git pull origin main", 
+              scenario: "Updating your local branch with remote changes." 
+            },
+          ]
         },
         {
-          title: 'Destructuring',
-          description: 'Extract values from arrays and objects',
-          code: `// Object destructuring
-const user = { name: 'John', age: 30, city: 'NYC' };
-const { name, age, ...rest } = user;
-
-// Array destructuring
-const [first, second, ...others] = [1, 2, 3, 4, 5];
-
-// Function parameter destructuring
-function greet({ name, age }) {
-  return \`Hello \${name}, you are \${age} years old\`;
-}
-
-// Nested destructuring
-const data = { user: { profile: { email: 'test@example.com' }}};
-const { user: { profile: { email }}} = data;
-
-// Default values
-const { country = 'USA' } = user;`,
-          category: 'syntax',
-          tags: ['destructuring', 'objects', 'arrays', 'es6']
-        },
-        {
-          title: 'ES6+ Features',
-          description: 'Modern JavaScript features',
-          code: `// Template literals
-const message = \`Hello \${name}, today is \${new Date().toDateString()}\`;
-
-// Arrow functions
-const add = (a, b) => a + b;
-const square = x => x * x;
-
-// Spread operator
-const arr1 = [1, 2, 3];
-const arr2 = [...arr1, 4, 5];
-const merged = { ...obj1, ...obj2 };
-
-// Optional chaining
-const email = user?.profile?.email;
-
-// Nullish coalescing
-const username = user.name ?? 'Anonymous';
-
-// Classes
-class Person {
-  constructor(name) {
-    this.name = name;
-  }
-  
-  greet() {
-    return \`Hello, I'm \${this.name}\`;
-  }
-}`,
-          category: 'modern',
-          tags: ['es6', 'arrow-functions', 'classes', 'spread', 'optional-chaining']
+          name: "Branching & Merging",
+          entries: [
+            { 
+              command: "git branch", 
+              description: "List all local branches.", 
+              example: "git branch", 
+              scenario: "Seeing available branches." 
+            },
+            { 
+              command: "git branch [branch-name]", 
+              description: "Create a new branch.", 
+              example: "git branch feature-x", 
+              scenario: "Starting work on a new feature." 
+            },
+            { 
+              command: "git checkout [branch]", 
+              description: "Switch to an existing branch.", 
+              example: "git checkout develop", 
+              scenario: "Changing to a different branch." 
+            },
+            { 
+              command: "git checkout -b [branch]", 
+              description: "Create and switch to a new branch.", 
+              example: "git checkout -b hotfix-123", 
+              scenario: "Creating and starting work on a new branch." 
+            },
+            { 
+              command: "git merge [branch]", 
+              description: "Merge the specified branch into current branch.", 
+              example: "git merge feature-x", 
+              scenario: "Integrating changes from one branch into another." 
+            },
+          ]
         }
       ]
     },
-    {
-      id: 'react',
-      name: 'React',
-      icon: <Globe className="w-4 h-4" />,
-      items: [
+    docker: {
+      title: "Docker",
+      categories: [
         {
-          title: 'Component Patterns',
-          description: 'Common React component structures',
-          code: `// Functional Component with Hooks
-import { useState, useEffect } from 'react';
-
-function UserProfile({ userId }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const response = await fetch(\`/api/users/\${userId}\`);
-        const userData = await response.json();
-        setUser(userData);
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUser();
-  }, [userId]);
-
-  if (loading) return <div>Loading...</div>;
-  if (!user) return <div>User not found</div>;
-
-  return (
-    <div>
-      <h1>{user.name}</h1>
-      <p>{user.email}</p>
-    </div>
-  );
-}`,
-          category: 'components',
-          tags: ['components', 'hooks', 'usestate', 'useeffect']
+          name: "Image Management",
+          entries: [
+            { 
+              command: "docker images", 
+              description: "List all local images.", 
+              example: "docker images", 
+              scenario: "Checking available Docker images on your system." 
+            },
+            { 
+              command: "docker pull [image]", 
+              description: "Download an image from registry.", 
+              example: "docker pull ubuntu:latest", 
+              scenario: "Getting a new Docker image." 
+            },
+            { 
+              command: "docker build -t [name] .", 
+              description: "Build an image from Dockerfile.", 
+              example: "docker build -t myapp:v1 .", 
+              scenario: "Creating a custom Docker image." 
+            },
+            { 
+              command: "docker rmi [image]", 
+              description: "Remove one or more images.", 
+              example: "docker rmi myapp:v1", 
+              scenario: "Cleaning up unused images." 
+            },
+          ]
         },
         {
-          title: 'Custom Hooks',
-          description: 'Reusable stateful logic',
-          code: `// Custom hook for API calls
-function useApi(url) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const response = await fetch(url);
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [url]);
-
-  return { data, loading, error };
-}
-
-// Usage
-function UserList() {
-  const { data: users, loading, error } = useApi('/api/users');
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-
-  return (
-    <ul>
-      {users.map(user => <li key={user.id}>{user.name}</li>)}
-    </ul>
-  );
-}`,
-          category: 'hooks',
-          tags: ['custom-hooks', 'api', 'reusable', 'state']
+          name: "Container Management",
+          entries: [
+            { 
+              command: "docker ps", 
+              description: "List running containers.", 
+              example: "docker ps", 
+              scenario: "Checking active containers." 
+            },
+            { 
+              command: "docker run [image]", 
+              description: "Create and start a new container.", 
+              example: "docker run -d -p 8080:80 nginx", 
+              scenario: "Running an application in a container." 
+            },
+            { 
+              command: "docker stop [container]", 
+              description: "Stop one or more running containers.", 
+              example: "docker stop my_container", 
+              scenario: "Gracefully stopping a container." 
+            },
+            { 
+              command: "docker exec -it [container] [command]", 
+              description: "Run a command in a running container.", 
+              example: "docker exec -it my_container bash", 
+              scenario: "Accessing a shell inside a container." 
+            },
+          ]
+        }
+      ]
+    },
+    bash: {
+      title: "Bash",
+      categories: [
+        {
+          name: "File Operations",
+          entries: [
+            { 
+              command: "ls -la", 
+              description: "List directory contents with details.", 
+              example: "ls -la /var/log", 
+              scenario: "Viewing files and directories with permissions." 
+            },
+            { 
+              command: "cd [directory]", 
+              description: "Change current directory.", 
+              example: "cd /var/log", 
+              scenario: "Navigating the file system." 
+            },
+            { 
+              command: "mkdir [directory]", 
+              description: "Create a new directory.", 
+              example: "mkdir new_project", 
+              scenario: "Creating a new folder." 
+            },
+            { 
+              command: "rm [file]", 
+              description: "Remove files.", 
+              example: "rm temp.txt", 
+              scenario: "Deleting a file." 
+            },
+            { 
+              command: "cp [source] [dest]", 
+              description: "Copy files or directories.", 
+              example: "cp file.txt backup/", 
+              scenario: "Making a copy of a file." 
+            },
+            { 
+              command: "mv [source] [dest]", 
+              description: "Move or rename files.", 
+              example: "mv old.txt new.txt", 
+              scenario: "Renaming or moving a file." 
+            },
+          ]
         },
         {
-          title: 'Context API',
-          description: 'State management with Context',
-          code: `// Create Context
-const ThemeContext = createContext();
-
-// Provider Component
-function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('light');
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+          name: "Text Processing",
+          entries: [
+            { 
+              command: "cat [file]", 
+              description: "Display file content.", 
+              example: "cat error.log", 
+              scenario: "Viewing the content of a file." 
+            },
+            { 
+              command: "grep \"[pattern]\" [file]", 
+              description: "Search for patterns in files.", 
+              example: "grep -i \"error\" server.log", 
+              scenario: "Finding specific text in a file." 
+            },
+            { 
+              command: "head [file]", 
+              description: "Show first lines of a file.", 
+              example: "head -n 20 access.log", 
+              scenario: "Viewing the beginning of a large file." 
+            },
+            { 
+              command: "tail [file]", 
+              description: "Show last lines of a file.", 
+              example: "tail -f app.log", 
+              scenario: "Monitoring log files in real-time." 
+            },
+          ]
+        }
+      ]
+    },
+    javascript: {
+      title: "JavaScript",
+      categories: [
+        {
+          name: "Array Methods",
+          entries: [
+            { 
+              command: "array.map(callback)", 
+              description: "Transform each element in an array.", 
+              example: "const doubled = numbers.map(n => n * 2)", 
+              scenario: "Converting an array of numbers to their doubles." 
+            },
+            { 
+              command: "array.filter(callback)", 
+              description: "Create a new array with filtered elements.", 
+              example: "const evens = numbers.filter(n => n % 2 === 0)", 
+              scenario: "Getting only even numbers from an array." 
+            },
+            { 
+              command: "array.reduce(callback, initial)", 
+              description: "Reduce array to a single value.", 
+              example: "const sum = numbers.reduce((acc, n) => acc + n, 0)", 
+              scenario: "Calculating the sum of all numbers." 
+            },
+            { 
+              command: "array.find(callback)", 
+              description: "Find the first element that matches condition.", 
+              example: "const found = users.find(user => user.id === 1)", 
+              scenario: "Finding a specific user by ID." 
+            },
+          ]
+        },
+        {
+          name: "Modern JavaScript",
+          entries: [
+            { 
+              command: "const { prop } = object", 
+              description: "Destructure properties from objects.", 
+              example: "const { name, age } = user", 
+              scenario: "Extracting specific properties from an object." 
+            },
+            { 
+              command: "const [first, ...rest] = array", 
+              description: "Destructure arrays with spread operator.", 
+              example: "const [head, ...tail] = [1, 2, 3, 4]", 
+              scenario: "Getting the first element and the rest separately." 
+            },
+            { 
+              command: "async function name() {}", 
+              description: "Define an asynchronous function.", 
+              example: "async function fetchData() { return await api.get('/data') }", 
+              scenario: "Making asynchronous API calls." 
+            },
+            { 
+              command: "const result = await promise", 
+              description: "Wait for a promise to resolve.", 
+              example: "const data = await fetch('/api/users')", 
+              scenario: "Waiting for an API response." 
+            },
+          ]
+        }
+      ]
+    }
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
+  // Create all commands data
+  const allCommandsData = useMemo(() => {
+    const allCommands: CheatItem[] = [];
+    Object.values(originalCheatData).forEach(sheet => {
+      sheet.categories.forEach(category => {
+        allCommands.push(...category.entries);
+      });
+    });
+    return allCommands;
+  }, []);
 
-// Custom hook for using context
-function useTheme() {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider');
-  }
-  return context;
-}
-
-// Using the context
-function Header() {
-  const { theme, toggleTheme } = useTheme();
-  
-  return (
-    <header className={\`header \${theme}\`}>
-      <button onClick={toggleTheme}>
-        Switch to {theme === 'light' ? 'dark' : 'light'} mode
-      </button>
-    </header>
-  );
-}`,
-          category: 'state',
-          tags: ['context', 'state-management', 'provider', 'global-state']
-        }
-      ]
+  const cheatData: CheatData = {
+    allCommands: {
+      title: "All Commands",
+      categories: [{ name: "All Available Commands", entries: allCommandsData }]
     },
-    {
-      id: 'css',
-      name: 'CSS',
-      icon: <Settings className="w-4 h-4" />,
-      items: [
-        {
-          title: 'Flexbox',
-          description: 'Flexible box layout properties',
-          code: `/* Container properties */
-.flex-container {
-  display: flex;
-  flex-direction: row; /* row, column, row-reverse, column-reverse */
-  justify-content: center; /* flex-start, flex-end, center, space-between, space-around, space-evenly */
-  align-items: center; /* flex-start, flex-end, center, stretch, baseline */
-  flex-wrap: wrap; /* nowrap, wrap, wrap-reverse */
-  gap: 1rem; /* shorthand for row-gap and column-gap */
-}
+    ...originalCheatData
+  };
 
-/* Item properties */
-.flex-item {
-  flex: 1; /* shorthand for flex-grow, flex-shrink, flex-basis */
-  flex-grow: 1; /* how much to grow */
-  flex-shrink: 1; /* how much to shrink */
-  flex-basis: auto; /* initial size */
-  align-self: center; /* override container's align-items */
-}
-
-/* Common patterns */
-.center-all {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.space-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}`,
-          category: 'layout',
-          tags: ['flexbox', 'layout', 'responsive', 'alignment']
-        },
-        {
-          title: 'Grid Layout',
-          description: 'CSS Grid for 2D layouts',
-          code: `/* Basic grid setup */
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
-  grid-template-rows: auto 1fr auto; /* header, main, footer */
-  grid-gap: 1rem; /* gap between items */
-  height: 100vh;
-}
-
-/* Named grid areas */
-.layout-grid {
-  display: grid;
-  grid-template-areas:
-    "header header header"
-    "sidebar main main"
-    "footer footer footer";
-  grid-template-columns: 200px 1fr;
-  grid-template-rows: auto 1fr auto;
-}
-
-.header { grid-area: header; }
-.sidebar { grid-area: sidebar; }
-.main { grid-area: main; }
-.footer { grid-area: footer; }
-
-/* Responsive grid */
-.responsive-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-/* Grid item positioning */
-.item {
-  grid-column: 1 / 3; /* span columns 1-2 */
-  grid-row: 2 / 4; /* span rows 2-3 */
-}`,
-          category: 'layout',
-          tags: ['grid', 'layout', '2d', 'responsive', 'areas']
-        },
-        {
-          title: 'Animations & Transitions',
-          description: 'CSS animations and transitions',
-          code: `/* Transitions */
-.button {
-  background-color: blue;
-  transition: all 0.3s ease-in-out;
-}
-
-.button:hover {
-  background-color: darkblue;
-  transform: scale(1.05);
-}
-
-/* Keyframe animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Loading spinner */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-
-/* Hover effects */
-.card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}`,
-          category: 'animations',
-          tags: ['animations', 'transitions', 'keyframes', 'hover', 'effects']
-        }
-      ]
-    },
-    {
-      id: 'python',
-      name: 'Python',
-      icon: <Cpu className="w-4 h-4" />,
-      items: [
-        {
-          title: 'List Comprehensions',
-          description: 'Pythonic way to create lists',
-          code: `# Basic list comprehension
-numbers = [1, 2, 3, 4, 5]
-squares = [x**2 for x in numbers]
-
-# With condition
-evens = [x for x in numbers if x % 2 == 0]
-
-# Nested comprehension
-matrix = [[i*j for j in range(3)] for i in range(3)]
-
-# Dictionary comprehension
-word_lengths = {word: len(word) for word in ['hello', 'world', 'python']}
-
-# Set comprehension
-unique_squares = {x**2 for x in numbers}
-
-# Generator expression (memory efficient)
-squares_gen = (x**2 for x in range(1000000))
-
-# Complex example with multiple conditions
-filtered_data = [
-    x.upper() 
-    for x in strings 
-    if len(x) > 3 and x.startswith('a')
-]
-
-# Flattening nested lists
-nested = [[1, 2], [3, 4], [5, 6]]
-flattened = [item for sublist in nested for item in sublist]`,
-          category: 'syntax',
-          tags: ['comprehensions', 'lists', 'pythonic', 'functional']
-        },
-        {
-          title: 'Decorators',
-          description: 'Function and class decorators',
-          code: `# Simple decorator
-def timer(func):
-    import time
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        print(f"{func.__name__} took {end - start:.2f} seconds")
-        return result
-    return wrapper
-
-@timer
-def slow_function():
-    time.sleep(1)
-    return "Done"
-
-# Decorator with parameters
-def repeat(times):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            for _ in range(times):
-                result = func(*args, **kwargs)
-            return result
-        return wrapper
-    return decorator
-
-@repeat(3)
-def greet(name):
-    print(f"Hello, {name}!")
-
-# Class decorator
-def add_method(cls):
-    def new_method(self):
-        return "Added method"
-    cls.new_method = new_method
-    return cls
-
-@add_method
-class MyClass:
-    pass
-
-# Property decorator
-class Circle:
-    def __init__(self, radius):
-        self._radius = radius
-    
-    @property
-    def radius(self):
-        return self._radius
-    
-    @radius.setter
-    def radius(self, value):
-        if value < 0:
-            raise ValueError("Radius cannot be negative")
-        self._radius = value
-    
-    @property
-    def area(self):
-        return 3.14159 * self._radius ** 2`,
-          category: 'advanced',
-          tags: ['decorators', 'functions', 'classes', 'metaprogramming']
-        },
-        {
-          title: 'Context Managers',
-          description: 'Managing resources with with statements',
-          code: `# Built-in context managers
-with open('file.txt', 'r') as f:
-    content = f.read()
-# File automatically closed
-
-# Custom context manager (class-based)
-class DatabaseConnection:
-    def __enter__(self):
-        self.connection = create_connection()
-        return self.connection
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.connection.close()
-        if exc_type is not None:
-            print(f"Exception occurred: {exc_val}")
-        return False  # Don't suppress exceptions
-
-# Usage
-with DatabaseConnection() as db:
-    db.execute("SELECT * FROM users")
-
-# Context manager using contextlib
-from contextlib import contextmanager
-
-@contextmanager
-def temporary_setting(setting, value):
-    old_value = get_setting(setting)
-    set_setting(setting, value)
-    try:
-        yield
-    finally:
-        set_setting(setting, old_value)
-
-# Usage
-with temporary_setting('debug', True):
-    # Code runs with debug=True
-    pass
-# debug setting restored
-
-# Multiple context managers
-with open('input.txt') as infile, open('output.txt', 'w') as outfile:
-    outfile.write(infile.read().upper())`,
-          category: 'advanced',
-          tags: ['context-managers', 'resources', 'with', 'cleanup']
-        }
-      ]
-    },
-    {
-      id: 'sql',
-      name: 'SQL',
-      icon: <Database className="w-4 h-4" />,
-      items: [
-        {
-          title: 'Query Basics',
-          description: 'Essential SQL query patterns',
-          code: `-- Basic SELECT
-SELECT column1, column2 FROM table_name;
-SELECT * FROM users WHERE age > 25;
-
--- Filtering and sorting
-SELECT name, email FROM users 
-WHERE age BETWEEN 18 AND 65 
-AND city IN ('New York', 'London', 'Tokyo')
-ORDER BY name ASC, age DESC
-LIMIT 10 OFFSET 20;
-
--- Aggregations
-SELECT 
-    department,
-    COUNT(*) as employee_count,
-    AVG(salary) as avg_salary,
-    MAX(salary) as max_salary,
-    MIN(salary) as min_salary
-FROM employees 
-GROUP BY department
-HAVING COUNT(*) > 5;
-
--- CASE statements
-SELECT 
-    name,
-    salary,
-    CASE 
-        WHEN salary > 100000 THEN 'High'
-        WHEN salary > 50000 THEN 'Medium'
-        ELSE 'Low'
-    END as salary_category
-FROM employees;`,
-          category: 'basics',
-          tags: ['select', 'where', 'group-by', 'aggregate', 'case']
-        },
-        {
-          title: 'Joins',
-          description: 'Combining data from multiple tables',
-          code: `-- INNER JOIN (only matching records)
-SELECT u.name, p.title, p.created_at
-FROM users u
-INNER JOIN posts p ON u.id = p.user_id;
-
--- LEFT JOIN (all records from left table)
-SELECT u.name, COUNT(p.id) as post_count
-FROM users u
-LEFT JOIN posts p ON u.id = p.user_id
-GROUP BY u.id, u.name;
-
--- RIGHT JOIN (all records from right table)
-SELECT u.name, p.title
-FROM users u
-RIGHT JOIN posts p ON u.id = p.user_id;
-
--- FULL OUTER JOIN (all records from both tables)
-SELECT u.name, p.title
-FROM users u
-FULL OUTER JOIN posts p ON u.id = p.user_id;
-
--- Self JOIN (table joined with itself)
-SELECT 
-    e1.name as employee,
-    e2.name as manager
-FROM employees e1
-LEFT JOIN employees e2 ON e1.manager_id = e2.id;
-
--- Multiple JOINs
-SELECT 
-    u.name,
-    p.title,
-    c.content
-FROM users u
-JOIN posts p ON u.id = p.user_id
-JOIN comments c ON p.id = c.post_id
-WHERE u.active = true;`,
-          category: 'joins',
-          tags: ['joins', 'inner', 'left', 'right', 'outer', 'relationships']
-        },
-        {
-          title: 'Advanced Queries',
-          description: 'Complex SQL operations',
-          code: `-- Subqueries
-SELECT name FROM users 
-WHERE id IN (
-    SELECT user_id FROM orders 
-    WHERE total > 1000
-);
-
--- Correlated subquery
-SELECT name FROM users u
-WHERE EXISTS (
-    SELECT 1 FROM orders o 
-    WHERE o.user_id = u.id AND o.status = 'completed'
-);
-
--- Window functions
-SELECT 
-    name,
-    salary,
-    ROW_NUMBER() OVER (ORDER BY salary DESC) as rank,
-    RANK() OVER (PARTITION BY department ORDER BY salary DESC) as dept_rank,
-    LAG(salary) OVER (ORDER BY salary) as prev_salary,
-    LEAD(salary) OVER (ORDER BY salary) as next_salary
-FROM employees;
-
--- Common Table Expressions (CTE)
-WITH high_earners AS (
-    SELECT * FROM employees WHERE salary > 80000
-),
-department_stats AS (
-    SELECT 
-        department,
-        AVG(salary) as avg_salary
-    FROM high_earners
-    GROUP BY department
-)
-SELECT * FROM department_stats WHERE avg_salary > 90000;
-
--- Recursive CTE (for hierarchical data)
-WITH RECURSIVE employee_hierarchy AS (
-    SELECT id, name, manager_id, 1 as level
-    FROM employees WHERE manager_id IS NULL
-    
-    UNION ALL
-    
-    SELECT e.id, e.name, e.manager_id, eh.level + 1
-    FROM employees e
-    JOIN employee_hierarchy eh ON e.manager_id = eh.id
-)
-SELECT * FROM employee_hierarchy;`,
-          category: 'advanced',
-          tags: ['subqueries', 'window-functions', 'cte', 'recursive', 'analytical']
-        }
-      ]
-    },
-    {
-      id: 'git',
-      name: 'Git',
-      icon: <Terminal className="w-4 h-4" />,
-      items: [
-        {
-          title: 'Basic Commands',
-          description: 'Essential Git operations',
-          code: `# Initialize repository
-git init
-git clone https://github.com/user/repo.git
-
-# Check status and add files
-git status
-git add .                    # Add all files
-git add filename.txt         # Add specific file
-git add *.js                # Add all JS files
-
-# Commit changes
-git commit -m "Add new feature"
-git commit -am "Add and commit in one step"
-
-# View history
-git log
-git log --oneline           # Condensed view
-git log --graph --oneline   # Visual branch history
-
-# Push and pull
-git push origin main
-git pull origin main
-git fetch origin           # Download without merging
-
-# Remote management
-git remote -v              # List remotes
-git remote add origin url  # Add remote
-git remote remove origin   # Remove remote`,
-          category: 'basics',
-          tags: ['git', 'init', 'commit', 'push', 'pull', 'remote']
-        },
-        {
-          title: 'Branching & Merging',
-          description: 'Working with branches',
-          code: `# Branch operations
-git branch                 # List branches
-git branch feature-name    # Create branch
-git checkout feature-name  # Switch to branch
-git checkout -b new-branch # Create and switch
-git switch main           # Modern way to switch
-git switch -c new-branch  # Create and switch (modern)
-
-# Merging
-git checkout main
-git merge feature-branch   # Merge feature into main
-git merge --no-ff feature  # Force merge commit
-
-# Delete branches
-git branch -d feature-name    # Delete merged branch
-git branch -D feature-name    # Force delete
-git push origin --delete branch-name  # Delete remote branch
-
-# Rebase (alternative to merge)
-git checkout feature
-git rebase main           # Replay commits on top of main
-git rebase -i HEAD~3      # Interactive rebase last 3 commits
-
-# Stash changes
-git stash                 # Save current changes
-git stash pop            # Apply and remove stash
-git stash list           # List all stashes
-git stash apply stash@{0} # Apply specific stash`,
-          category: 'branching',
-          tags: ['branches', 'merge', 'rebase', 'stash', 'workflow']
-        },
-        {
-          title: 'Undoing Changes',
-          description: 'Fixing mistakes in Git',
-          code: `# Unstage files
-git reset HEAD filename    # Unstage specific file
-git reset HEAD~1          # Undo last commit (keep changes)
-git reset --hard HEAD~1   # Undo last commit (lose changes)
-
-# Revert commits (safe way)
-git revert HEAD           # Create new commit that undoes last commit
-git revert commit-hash    # Revert specific commit
-
-# Amend last commit
-git commit --amend -m "New message"  # Change commit message
-git add forgotten-file
-git commit --amend --no-edit         # Add file to last commit
-
-# Discard changes
-git checkout -- filename    # Discard file changes
-git checkout .              # Discard all changes
-git clean -fd              # Remove untracked files and directories
-
-# Reset to specific commit
-git reset --soft commit-hash   # Keep changes staged
-git reset --mixed commit-hash  # Keep changes unstaged
-git reset --hard commit-hash   # Lose all changes
-
-# Restore (modern Git)
-git restore filename        # Discard file changes
-git restore --staged file   # Unstage file
-git restore --source=HEAD~1 file  # Restore from specific commit`,
-          category: 'fixes',
-          tags: ['reset', 'revert', 'amend', 'restore', 'undo', 'mistakes']
-        }
-      ]
-    },
-    {
-      id: 'bash',
-      name: 'Bash/Shell',
-      icon: <Terminal className="w-4 h-4" />,
-      items: [
-        {
-          title: 'File Operations',
-          description: 'Working with files and directories',
-          code: `# Navigation
-pwd                    # Print working directory
-ls -la                # List files with details
-cd /path/to/directory # Change directory
-cd ..                 # Go up one directory
-cd ~                  # Go to home directory
-
-# File operations
-touch filename.txt    # Create empty file
-mkdir directory       # Create directory
-mkdir -p path/to/dir  # Create nested directories
-cp file1 file2        # Copy file
-cp -r dir1 dir2       # Copy directory recursively
-mv oldname newname    # Move/rename
-rm filename          # Delete file
-rm -rf directory     # Delete directory recursively
-rmdir empty_dir      # Delete empty directory
-
-# File content
-cat filename         # Display file content
-less filename        # View file page by page
-head -n 10 file     # First 10 lines
-tail -n 10 file     # Last 10 lines
-tail -f log.txt     # Follow file changes (logs)
-wc -l filename      # Count lines
-grep "pattern" file # Search in file
-find . -name "*.txt" # Find files by pattern`,
-          category: 'files',
-          tags: ['files', 'directories', 'navigation', 'search', 'content']
-        },
-        {
-          title: 'Text Processing',
-          description: 'Manipulating text and data',
-          code: `# Grep (search)
-grep "pattern" file.txt
-grep -i "pattern" file.txt      # Case insensitive
-grep -r "pattern" directory/    # Recursive search
-grep -n "pattern" file.txt      # Show line numbers
-grep -v "pattern" file.txt      # Invert match (exclude)
-
-# Sed (stream editor)
-sed 's/old/new/g' file.txt      # Replace all occurrences
-sed 's/old/new/' file.txt       # Replace first occurrence per line
-sed -i 's/old/new/g' file.txt   # Edit file in place
-sed '1,5d' file.txt            # Delete lines 1-5
-sed -n '10,20p' file.txt       # Print lines 10-20
-
-# Awk (pattern scanning)
-awk '{print $1}' file.txt       # Print first column
-awk '{print $NF}' file.txt      # Print last column
-awk '{sum+=$1} END {print sum}' # Sum first column
-awk '/pattern/ {print}' file    # Print lines matching pattern
-
-# Sort and unique
-sort file.txt                   # Sort lines
-sort -n numbers.txt            # Numeric sort
-sort -r file.txt               # Reverse sort
-uniq file.txt                  # Remove duplicate lines
-sort file.txt | uniq -c        # Count occurrences`,
-          category: 'text',
-          tags: ['grep', 'sed', 'awk', 'sort', 'text-processing', 'regex']
-        },
-        {
-          title: 'System & Processes',
-          description: 'System monitoring and process management',
-          code: `# Process management
-ps aux                 # List all processes
-ps aux | grep nginx    # Find specific process
-top                    # Real-time process viewer
-htop                   # Enhanced process viewer
-kill PID              # Terminate process by ID
-kill -9 PID           # Force kill process
-killall process_name  # Kill all processes by name
-jobs                  # List background jobs
-fg %1                 # Bring job to foreground
-bg %1                 # Send job to background
-nohup command &       # Run command immune to hangups
-
-# System information
-uname -a              # System information
-df -h                 # Disk usage
-du -sh directory/     # Directory size
-free -h               # Memory usage
-uptime                # System uptime
-whoami                # Current user
-id                    # User and group IDs
-which command         # Find command location
-history               # Command history
-
-# Network
-ping google.com       # Test connectivity
-wget url              # Download file
-curl -O url           # Download with curl
-netstat -tulpn        # Show network connections
-ss -tulpn             # Modern netstat alternative`,
-          category: 'system',
-          tags: ['processes', 'system', 'monitoring', 'network', 'performance']
-        }
-      ]
-    }
-  ];
-
-  const filteredItems = useMemo(() => {
+  const filteredData = useMemo(() => {
     if (!searchTerm) return cheatData;
-    
-    return cheatData.map(category => ({
-      ...category,
-      items: category.items.filter(item =>
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        item.code.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    })).filter(category => category.items.length > 0);
-  }, [searchTerm]);
 
-  const copyToClipboard = async (code: string, title: string) => {
+    const filtered: CheatData = {};
+    Object.entries(cheatData).forEach(([key, sheet]) => {
+      const filteredCategories = sheet.categories.map(category => ({
+        ...category,
+        entries: category.entries.filter(entry =>
+          entry.command.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          entry.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (entry.example && entry.example.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          entry.scenario.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      })).filter(category => category.entries.length > 0);
+
+      if (filteredCategories.length > 0) {
+        filtered[key] = { ...sheet, categories: filteredCategories };
+      }
+    });
+
+    return filtered;
+  }, [searchTerm, cheatData]);
+
+  const copyToClipboard = async (text: string, type: string) => {
     try {
-      await navigator.clipboard.writeText(code);
-      setCopiedItem(title);
+      await navigator.clipboard.writeText(text);
+      setCopiedItem(type);
       setTimeout(() => setCopiedItem(null), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
   };
 
-  const allItems = cheatData.flatMap(category => 
-    category.items.map(item => ({ ...item, categoryName: category.name }))
-  );
+  const showCommandDetails = (command: CheatItem) => {
+    setSelectedCommand(command);
+    setIsModalOpen(true);
+  };
 
-  const searchResults = useMemo(() => {
-    if (!searchTerm) return [];
-    
-    return allItems.filter(item =>
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      item.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, allItems]);
+  const colorCodeCommand = (command: string) => {
+    // Simple syntax highlighting for commands
+    return command
+      .replace(/(\[[^\]]+\])/g, '<span class="text-orange-400">$1</span>')
+      .replace(/(".*?")/g, '<span class="text-green-400">$1</span>')
+      .replace(/(--?\w+)/g, '<span class="text-pink-400">$1</span>');
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-blue-950/20 dark:via-background dark:to-purple-950/20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-300">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <Link href="/playground" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/playground" className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Back to Playground
             </Link>
-            <Badge variant="secondary" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+            <Badge variant="secondary" className="bg-blue-600 text-white">
               <Book className="w-3 h-3 mr-1" />
               Reference
             </Badge>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Developer Cheatsheet
+          <h1 className="text-4xl font-bold text-center text-gray-100 mb-4">
+            Developer Cheat Sheets
           </h1>
-          <p className="text-muted-foreground text-lg">
-            Quick reference guide for developers with searchable syntax, code snippets, and examples
-          </p>
+
+          {/* Search */}
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search across all cheat sheets (e.g., 'git commit', 'docker images')"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {searchTerm && (
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-400">
+                Found {Object.values(filteredData).reduce((acc, sheet) => 
+                  acc + sheet.categories.reduce((catAcc, cat) => catAcc + cat.entries.length, 0), 0
+                )} results for "{searchTerm}"
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Search */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search syntax, functions, or concepts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 text-base"
-              />
-            </div>
-            {searchTerm && (
-              <div className="mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchTerm}"
-                </p>
+        {/* Tabs */}
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
+          <TabsList className="grid grid-cols-2 lg:grid-cols-5 w-full bg-gray-800 border-gray-700">
+            {Object.entries(filteredData).map(([key, sheet]) => (
+              <TabsTrigger 
+                key={key} 
+                value={key} 
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-400 hover:text-gray-200"
+              >
+                {sheet.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {Object.entries(filteredData).map(([key, sheet]) => (
+            <TabsContent key={key} value={key} className="mt-6">
+              {key === 'allCommands' ? (
+                // All Commands Layout
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {sheet.categories[0].entries.map((entry, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-800 border border-gray-700 rounded">
+                      <span className="font-mono text-sm text-gray-200 flex-1 mr-3 truncate" title={entry.command}>
+                        {entry.command}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => showCommandDetails(entry)}
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                        >
+                          <Eye className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(entry.command, `all-${index}`)}
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                        >
+                          {copiedItem === `all-${index}` ? (
+                            <Check className="w-3 h-3 text-green-400" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Category Layout
+                <div className="space-y-8">
+                  {sheet.categories.map((category, categoryIndex) => (
+                    <div key={categoryIndex}>
+                      <h2 className="text-2xl font-semibold mb-4 pb-2 border-b border-gray-700 text-gray-400">
+                        {category.name}
+                      </h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {category.entries.map((entry, entryIndex) => (
+                          <Card key={entryIndex} className="bg-gray-800 border-gray-700 flex flex-col h-full">
+                            <CardHeader className="pb-3">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 mr-2">
+                                  <CardTitle className="text-lg text-gray-100 mb-2">
+                                    <code className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-sm break-all">
+                                      {entry.command}
+                                    </code>
+                                  </CardTitle>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copyToClipboard(entry.command, `${key}-${categoryIndex}-${entryIndex}`)}
+                                  className="shrink-0 bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+                                >
+                                  {copiedItem === `${key}-${categoryIndex}-${entryIndex}` ? (
+                                    <Check className="w-4 h-4 text-green-400" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="flex-1 pt-0">
+                              <p className="text-sm text-gray-400 mb-2">
+                                <strong className="text-gray-300">Description:</strong> {entry.description}
+                              </p>
+                              <p className="text-sm text-gray-400 mb-3">
+                                <strong className="text-gray-300">Scenario:</strong> {entry.scenario}
+                              </p>
+                              {entry.example && (
+                                <div className="mt-auto">
+                                  <p className="text-sm font-semibold text-gray-300 mb-1">Example:</p>
+                                  <pre className="bg-gray-900 border border-gray-600 rounded p-3 text-sm overflow-x-auto">
+                                    <code 
+                                      className="text-gray-200"
+                                      dangerouslySetInnerHTML={{ __html: colorCodeCommand(entry.example) }}
+                                    />
+                                  </pre>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(entry.example, `example-${key}-${categoryIndex}-${entryIndex}`)}
+                                    className="mt-2 h-8 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                                  >
+                                    {copiedItem === `example-${key}-${categoryIndex}-${entryIndex}` ? (
+                                      <Check className="w-3 h-3 mr-1 text-green-400" />
+                                    ) : (
+                                      <Copy className="w-3 h-3 mr-1" />
+                                    )}
+                                    Copy Example
+                                  </Button>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          ))}
+        </Tabs>
+
+        {/* Command Details Modal */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="bg-gray-800 border-gray-700 text-gray-200 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold text-blue-400 break-all">
+                {selectedCommand?.command}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedCommand && (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-300">
+                    <strong className="text-gray-100">Description:</strong> {selectedCommand.description}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-300">
+                    <strong className="text-gray-100">Scenario:</strong> {selectedCommand.scenario}
+                  </p>
+                </div>
+                {selectedCommand.example && (
+                  <div>
+                    <p className="text-gray-100 font-semibold mb-2 text-sm">Example:</p>
+                    <pre className="bg-gray-900 border border-gray-600 rounded p-3 text-sm overflow-x-auto">
+                      <code 
+                        className="text-gray-200"
+                        dangerouslySetInnerHTML={{ __html: colorCodeCommand(selectedCommand.example) }}
+                      />
+                    </pre>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(selectedCommand.example!, 'modal-example')}
+                      className="mt-2 bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+                    >
+                      {copiedItem === 'modal-example' ? (
+                        <>
+                          <Check className="w-3 h-3 mr-1 text-green-400" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 mr-1" />
+                          Copy Example
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Search Results */}
-        {searchTerm && searchResults.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5" />
-              Search Results
-            </h2>
-            <div className="grid gap-4">
-              {searchResults.map((item, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">{item.title}</CardTitle>
-                        <CardDescription className="flex items-center gap-2 mt-1">
-                          {item.description}
-                          <Badge variant="outline" className="text-xs">
-                            {item.categoryName}
-                          </Badge>
-                        </CardDescription>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(item.code, item.title)}
-                        className="shrink-0"
-                      >
-                        {copiedItem === item.title ? (
-                          <Check className="w-4 h-4" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {item.tags.map(tag => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                      <code>{item.code}</code>
-                    </pre>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Categories */}
-        {!searchTerm && (
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
-            <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full">
-              {cheatData.map(category => (
-                <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-2">
-                  {category.icon}
-                  <span className="hidden sm:inline">{category.name}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {cheatData.map(category => (
-              <TabsContent key={category.id} value={category.id}>
-                <div className="grid gap-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    {category.icon}
-                    <h2 className="text-2xl font-bold">{category.name}</h2>
-                    <Badge variant="outline">{category.items.length} snippets</Badge>
-                  </div>
-                  
-                  <div className="grid gap-4">
-                    {category.items.map((item, index) => (
-                      <Card key={index} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-lg">{item.title}</CardTitle>
-                              <CardDescription>{item.description}</CardDescription>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyToClipboard(item.code, item.title)}
-                              className="shrink-0"
-                            >
-                              {copiedItem === item.title ? (
-                                <Check className="w-4 h-4" />
-                              ) : (
-                                <Copy className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {item.tags.map(tag => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <ScrollArea className="h-auto max-h-96">
-                            <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                              <code>{item.code}</code>
-                            </pre>
-                          </ScrollArea>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        )}
+          </DialogContent>
+        </Dialog>
 
         {/* No results */}
-        {searchTerm && searchResults.length === 0 && (
-          <Card className="text-center py-12">
+        {searchTerm && Object.keys(filteredData).length === 0 && (
+          <Card className="text-center py-12 bg-gray-800 border-gray-700">
             <CardContent>
-              <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No results found</h3>
-              <p className="text-muted-foreground">
+              <Search className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2 text-gray-300">No results found</h3>
+              <p className="text-gray-400">
                 Try searching for different keywords or browse the categories above.
               </p>
             </CardContent>
           </Card>
         )}
-
-        {/* Footer */}
-        <Card className="mt-12">
-          <CardContent className="pt-6 text-center">
-            <div className="space-y-2">
-              <h3 className="font-semibold">Need more references?</h3>
-              <p className="text-sm text-muted-foreground">
-                This cheatsheet covers essential syntax and patterns for web development.
-                Bookmark this page for quick access to commonly used code snippets.
-              </p>
-              <div className="flex justify-center gap-4 mt-4">
-                <Button variant="outline" asChild>
-                  <Link href="/playground">
-                    Explore More Tools
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
