@@ -122,7 +122,12 @@ export default function HeroSection() {
       case 'image':
         return (
           <div className="absolute inset-0 -z-10">
-           
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: `url(${slide.backgroundImage})`
+              }}
+            />
             <div className="absolute inset-0 bg-black/50"></div>
           </div>
         );
