@@ -478,17 +478,19 @@ export default function DeveloperCheatsheet() {
 
         {/* Tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
-          <TabsList className="grid grid-cols-2 lg:grid-cols-5 w-full">
-            {Object.entries(filteredData).map(([key, sheet]) => (
-              <TabsTrigger 
-                key={key} 
-                value={key} 
-                className="transition-all duration-300"
-              >
-                {sheet.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-full lg:min-w-0 lg:grid lg:grid-cols-5 w-full">
+              {Object.entries(filteredData).map(([key, sheet]) => (
+                <TabsTrigger 
+                  key={key} 
+                  value={key} 
+                  className="transition-all duration-300 whitespace-nowrap flex-shrink-0 lg:flex-shrink"
+                >
+                  {sheet.title}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           {Object.entries(filteredData).map(([key, sheet]) => (
             <TabsContent key={key} value={key} className="mt-6">
