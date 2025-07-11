@@ -66,7 +66,7 @@ export default function PlaygroundCard({ project, showInteractButton = false, vi
                 </Button>
               ) : (
                 <Button asChild size="sm" variant="outline">
-                  <Link href="/playground">
+                  <Link href={`/playground/${project.slug}`}>
                     <Clock className="w-4 h-4 mr-2" />
                     Coming Soon
                   </Link>
@@ -138,12 +138,9 @@ export default function PlaygroundCard({ project, showInteractButton = false, vi
             </div>
           ) : (
             <div className="text-center">
-              <ComingSoonAnimation />
-              <p className="text-sm text-muted-foreground mt-2 italic">
-                {project.comingSoonHint}
-              </p>
-              <Button asChild size="sm" variant="outline" className="mt-2">
-                <Link href="/playground">
+              <p className="text-sm text-muted-foreground mb-2">{project.comingSoonHint}</p>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/playground/${project.slug}`}>
                   <Clock className="w-4 h-4 mr-2" />
                   Coming Soon
                 </Link>
