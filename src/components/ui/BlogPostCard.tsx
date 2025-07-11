@@ -15,13 +15,13 @@ const getBlogGradient = (slug: string) => {
     'bg-gradient-to-br from-sky-500 via-indigo-600 to-purple-700 [--gradient-start:theme(colors.sky.500)] [--gradient-middle:theme(colors.indigo.600)] [--gradient-end:theme(colors.purple.700)]',
     'bg-gradient-to-br from-fuchsia-500 via-pink-600 to-rose-700 [--gradient-start:theme(colors.fuchsia.500)] [--gradient-middle:theme(colors.pink.600)] [--gradient-end:theme(colors.rose.700)]'
   ];
-  
+
   // Generate a consistent index based on the slug
   const hash = slug.split('').reduce((a, b) => {
     a = ((a << 5) - a) + b.charCodeAt(0);
     return a & a;
   }, 0);
-  
+
   return gradients[Math.abs(hash) % gradients.length];
 };
 

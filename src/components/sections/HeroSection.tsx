@@ -100,7 +100,7 @@ export default function HeroSection() {
   // Auto-advance slides
   useEffect(() => {
     if (!isPlaying) return;
-    
+
     const interval = setInterval(() => {
       nextSlide();
     }, 5000); // Change slide every 5 seconds
@@ -122,13 +122,7 @@ export default function HeroSection() {
       case 'image':
         return (
           <div className="absolute inset-0 -z-10">
-            <Image
-              src={slide.backgroundImage!}
-              alt="Hero background"
-              fill
-              className="object-cover"
-              priority
-            />
+           
             <div className="absolute inset-0 bg-black/50"></div>
           </div>
         );
@@ -177,7 +171,7 @@ export default function HeroSection() {
         >
           {slide.description}
         </p>
-        
+
         {/* CTA Button */}
         <div className="animate-fade-in-up mb-8" style={{animationDelay: '0.8s'}}>
           <Button 
