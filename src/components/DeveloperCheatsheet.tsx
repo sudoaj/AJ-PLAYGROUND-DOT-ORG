@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -428,44 +429,45 @@ export default function DeveloperCheatsheet() {
   const colorCodeCommand = (command: string) => {
     // Simple syntax highlighting for commands
     return command
-      .replace(/(\[[^\]]+\])/g, '<span class="text-orange-400">$1</span>')
-      .replace(/(".*?")/g, '<span class="text-green-400">$1</span>')
-      .replace(/(--?\w+)/g, '<span class="text-pink-400">$1</span>');
+      .replace(/(\[[^\]]+\])/g, '<span style="color: #fbbf24;">$1</span>')
+      .replace(/(".*?")/g, '<span style="color: #4ade80;">$1</span>')
+      .replace(/(--?\w+)/g, '<span style="color: #f472b6;">$1</span>');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-300">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto px-4 py-8 max-w-screen-2xl">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Link href="/playground" className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors">
+          <div className="flex items-center justify-between mb-6">
+            <Link href="/playground" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Back to Playground
             </Link>
-            <Badge variant="secondary" className="bg-blue-600 text-white">
+            <Badge variant="secondary" className="bg-primary text-primary-foreground">
               <Book className="w-3 h-3 mr-1" />
               Reference
             </Badge>
           </div>
-          <h1 className="text-4xl font-bold text-center text-gray-100 mb-4">
+          
+          <h1 className="text-3xl font-bold text-center mb-4">
             Developer Cheat Sheets
           </h1>
 
           {/* Search */}
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <div className="relative max-w-2xl mx-auto mb-6">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search across all cheat sheets (e.g., 'git commit', 'docker images')"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="pl-10 shadow-sm focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {searchTerm && (
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-400">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">
                 Found {Object.values(filteredData).reduce((acc, sheet) => 
                   acc + sheet.categories.reduce((catAcc, cat) => catAcc + cat.entries.length, 0), 0
                 )} results for "{searchTerm}"
@@ -476,12 +478,12 @@ export default function DeveloperCheatsheet() {
 
         {/* Tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
-          <TabsList className="grid grid-cols-2 lg:grid-cols-5 w-full bg-gray-800 border-gray-700">
+          <TabsList className="grid grid-cols-2 lg:grid-cols-5 w-full">
             {Object.entries(filteredData).map(([key, sheet]) => (
               <TabsTrigger 
                 key={key} 
                 value={key} 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-400 hover:text-gray-200"
+                className="transition-all duration-300"
               >
                 {sheet.title}
               </TabsTrigger>
@@ -491,35 +493,65 @@ export default function DeveloperCheatsheet() {
           {Object.entries(filteredData).map(([key, sheet]) => (
             <TabsContent key={key} value={key} className="mt-6">
               {key === 'allCommands' ? (
-                // All Commands Layout
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                // All Commands Layout - Grid style like the HTML example
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                   {sheet.categories[0].entries.map((entry, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-800 border border-gray-700 rounded">
-                      <span className="font-mono text-sm text-gray-200 flex-1 mr-3 truncate" title={entry.command}>
-                        {entry.command}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => showCommandDetails(entry)}
-                          className="h-8 w-8 p-0 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-                        >
-                          <Eye className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(entry.command, `all-${index}`)}
-                          className="h-8 w-8 p-0 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-                        >
-                          {copiedItem === `all-${index}` ? (
-                            <Check className="w-3 h-3 text-green-400" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </Button>
+                    <div 
+                      key={index} 
+                      className="flex flex-col border border-border rounded-lg p-4 bg-card shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 mr-2">
+                          <h3 className="text-lg font-semibold text-foreground mb-2 flex items-center flex-wrap">
+                            <div className="flex-grow mr-2">
+                              <code className="bg-muted text-foreground px-2 py-1 rounded text-sm break-all font-mono">
+                                {entry.command}
+                              </code>
+                            </div>
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => showCommandDetails(entry)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(entry.command, `all-${index}`)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {copiedItem === `all-${index}` ? (
+                              <Check className="w-3 h-3 text-green-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
+                      
+                      <p className="text-sm text-muted-foreground mb-2">
+                        <strong className="text-foreground">Description:</strong> {entry.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        <strong className="text-foreground">Scenario:</strong> {entry.scenario}
+                      </p>
+                      
+                      {entry.example && (
+                        <div className="mt-3">
+                          <p className="text-sm font-semibold text-foreground mb-1">Example:</p>
+                          <pre className="bg-muted border border-border rounded p-3 text-sm overflow-x-auto">
+                            <code 
+                              className="text-foreground"
+                              dangerouslySetInnerHTML={{ __html: colorCodeCommand(entry.example) }}
+                            />
+                          </pre>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -528,17 +560,17 @@ export default function DeveloperCheatsheet() {
                 <div className="space-y-8">
                   {sheet.categories.map((category, categoryIndex) => (
                     <div key={categoryIndex}>
-                      <h2 className="text-2xl font-semibold mb-4 pb-2 border-b border-gray-700 text-gray-400">
+                      <h2 className="text-2xl font-semibold mb-6 pb-2 border-b border-border text-muted-foreground">
                         {category.name}
                       </h2>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {category.entries.map((entry, entryIndex) => (
-                          <Card key={entryIndex} className="bg-gray-800 border-gray-700 flex flex-col h-full">
+                          <Card key={entryIndex} className="flex flex-col h-full hover:shadow-lg transition-shadow">
                             <CardHeader className="pb-3">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 mr-2">
-                                  <CardTitle className="text-lg text-gray-100 mb-2">
-                                    <code className="bg-gray-700 text-gray-200 px-2 py-1 rounded text-sm break-all">
+                                  <CardTitle className="text-lg mb-2">
+                                    <code className="bg-muted text-foreground px-2 py-1 rounded text-sm break-all font-mono">
                                       {entry.command}
                                     </code>
                                   </CardTitle>
@@ -547,10 +579,10 @@ export default function DeveloperCheatsheet() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => copyToClipboard(entry.command, `${key}-${categoryIndex}-${entryIndex}`)}
-                                  className="shrink-0 bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+                                  className="shrink-0"
                                 >
                                   {copiedItem === `${key}-${categoryIndex}-${entryIndex}` ? (
-                                    <Check className="w-4 h-4 text-green-400" />
+                                    <Check className="w-4 h-4 text-green-500" />
                                   ) : (
                                     <Copy className="w-4 h-4" />
                                   )}
@@ -558,18 +590,18 @@ export default function DeveloperCheatsheet() {
                               </div>
                             </CardHeader>
                             <CardContent className="flex-1 pt-0">
-                              <p className="text-sm text-gray-400 mb-2">
-                                <strong className="text-gray-300">Description:</strong> {entry.description}
+                              <p className="text-sm text-muted-foreground mb-2">
+                                <strong className="text-foreground">Description:</strong> {entry.description}
                               </p>
-                              <p className="text-sm text-gray-400 mb-3">
-                                <strong className="text-gray-300">Scenario:</strong> {entry.scenario}
+                              <p className="text-sm text-muted-foreground mb-3">
+                                <strong className="text-foreground">Scenario:</strong> {entry.scenario}
                               </p>
                               {entry.example && (
                                 <div className="mt-auto">
-                                  <p className="text-sm font-semibold text-gray-300 mb-1">Example:</p>
-                                  <pre className="bg-gray-900 border border-gray-600 rounded p-3 text-sm overflow-x-auto">
+                                  <p className="text-sm font-semibold text-foreground mb-1">Example:</p>
+                                  <pre className="bg-muted border border-border rounded p-3 text-sm overflow-x-auto">
                                     <code 
-                                      className="text-gray-200"
+                                      className="text-foreground"
                                       dangerouslySetInnerHTML={{ __html: colorCodeCommand(entry.example) }}
                                     />
                                   </pre>
@@ -577,10 +609,10 @@ export default function DeveloperCheatsheet() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => copyToClipboard(entry.example, `example-${key}-${categoryIndex}-${entryIndex}`)}
-                                    className="mt-2 h-8 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                                    className="mt-2 h-8"
                                   >
                                     {copiedItem === `example-${key}-${categoryIndex}-${entryIndex}` ? (
-                                      <Check className="w-3 h-3 mr-1 text-green-400" />
+                                      <Check className="w-3 h-3 mr-1 text-green-500" />
                                     ) : (
                                       <Copy className="w-3 h-3 mr-1" />
                                     )}
@@ -602,30 +634,30 @@ export default function DeveloperCheatsheet() {
 
         {/* Command Details Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="bg-gray-800 border-gray-700 text-gray-200 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold text-blue-400 break-all">
+              <DialogTitle className="text-lg font-semibold text-primary break-all">
                 {selectedCommand?.command}
               </DialogTitle>
             </DialogHeader>
             {selectedCommand && (
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-300">
-                    <strong className="text-gray-100">Description:</strong> {selectedCommand.description}
+                  <p className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">Description:</strong> {selectedCommand.description}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-300">
-                    <strong className="text-gray-100">Scenario:</strong> {selectedCommand.scenario}
+                  <p className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">Scenario:</strong> {selectedCommand.scenario}
                   </p>
                 </div>
                 {selectedCommand.example && (
                   <div>
-                    <p className="text-gray-100 font-semibold mb-2 text-sm">Example:</p>
-                    <pre className="bg-gray-900 border border-gray-600 rounded p-3 text-sm overflow-x-auto">
+                    <p className="text-foreground font-semibold mb-2 text-sm">Example:</p>
+                    <pre className="bg-muted border border-border rounded p-3 text-sm overflow-x-auto">
                       <code 
-                        className="text-gray-200"
+                        className="text-foreground"
                         dangerouslySetInnerHTML={{ __html: colorCodeCommand(selectedCommand.example) }}
                       />
                     </pre>
@@ -633,11 +665,11 @@ export default function DeveloperCheatsheet() {
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(selectedCommand.example!, 'modal-example')}
-                      className="mt-2 bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+                      className="mt-2"
                     >
                       {copiedItem === 'modal-example' ? (
                         <>
-                          <Check className="w-3 h-3 mr-1 text-green-400" />
+                          <Check className="w-3 h-3 mr-1 text-green-500" />
                           Copied!
                         </>
                       ) : (
@@ -656,11 +688,11 @@ export default function DeveloperCheatsheet() {
 
         {/* No results */}
         {searchTerm && Object.keys(filteredData).length === 0 && (
-          <Card className="text-center py-12 bg-gray-800 border-gray-700">
+          <Card className="text-center py-12">
             <CardContent>
-              <Search className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2 text-gray-300">No results found</h3>
-              <p className="text-gray-400">
+              <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No results found</h3>
+              <p className="text-muted-foreground">
                 Try searching for different keywords or browse the categories above.
               </p>
             </CardContent>
