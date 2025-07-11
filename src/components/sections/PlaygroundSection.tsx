@@ -9,11 +9,16 @@ export default function PlaygroundSection() {
   const allProjects = getAllPlaygroundProjects();
   const activeProjects = getActivePlaygroundProjects();
   
-  // Only show live projects (exclude coming soon and abandoned projects)
-  const liveProjects = allProjects.filter(project => project.isLive && !project.isAbandoned);
+  // Prioritize active projects for the homepage preview
+  const displayProjects = activeProjects.slice(0, 4);
   
-  // Display up to 4 live projects
-  const displayProjects = liveProjects.slice(0, 4);
+  // If we don't have 4 active projects, fill with other projects
+  if (displayProjects.length < 4) {
+    const remainingProjects = allProjects
+      .filter(project => !activeProjects.includes(project))
+      .slice(0, 4 - displayProjects.length);
+    displayProjects.push(...remainingProjects);
+  }
 
   return (
     <section id="playground" className="py-16 md:py-24 bg-background scroll-mt-20">
