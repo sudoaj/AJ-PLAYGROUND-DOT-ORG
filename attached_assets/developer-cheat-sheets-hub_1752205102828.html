@@ -1,0 +1,1792 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Cheat Sheets - Dark Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Tailwind gray-900 */
+            color: #d1d5db; /* Tailwind gray-300 */
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+            color: #9ca3af; /* Tailwind gray-400 */
+            border-bottom-width: 2px;
+            border-color: transparent;
+        }
+        .tab-button:hover {
+            border-color: #4b5563; /* Tailwind gray-600 */
+            color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        .tab-button.active {
+            border-color: #3b82f6; /* Tailwind blue-500 */
+            color: #60a5fa; /* Tailwind blue-400 */
+            background-color: #1f2937; /* Tailwind gray-800 */
+        }
+        .content-entry {
+            border: 1px solid #374151; /* Tailwind gray-700 */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            padding: 1rem; /* Tailwind p-4 */
+            background-color: #1f2937; /* Tailwind gray-800 */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Tailwind shadow-sm */
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .content-entry h3 { /* For the main command display */
+            font-size: 1.125rem; /* Tailwind text-lg */
+            font-weight: 600; /* Tailwind font-semibold */
+            color: #f3f4f6; /* Tailwind gray-100 */
+            margin-bottom: 0.75rem; /* Increased margin slightly */
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .content-entry h3 .command-code-wrapper {
+            flex-grow: 1;
+            margin-right: 0.5rem;
+        }
+        /* Styling for the main command code (not color-coded) */
+        .content-entry h3 code {
+            background-color: #374151; /* Tailwind gray-700 */
+            color: #e5e7eb; /* Tailwind gray-200, slightly brighter for emphasis */
+            padding: 0.25rem 0.5rem; /* Adjusted padding */
+            border-radius: 0.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            word-break: break-all;
+        }
+
+        /* Styling for example commands in <pre> (color-coded) */
+        .content-entry pre {
+            background-color: #272e3b; /* Slightly different background for pre block */
+            border: 1px solid #4b5563; /* Tailwind gray-600 */
+            border-radius: 0.25rem;
+            margin-top: 0.25rem;
+        }
+        .content-entry pre code { /* This is for the code inside <pre> */
+            display: block;
+            padding: 0.75rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: transparent; /* Transparent as <pre> has background */
+            color: #d1d5db; /* Default text color for example code */
+        }
+        .content-entry p {
+            margin-bottom: 0.5rem;
+            color: #9ca3af; /* Tailwind gray-400 */
+            /* Default font size is text-sm (0.875rem) from body, can make it smaller if needed */
+        }
+        .desc-scenario-text {
+            font-size: 0.8rem; /* Slightly smaller font for desc/scenario */
+            color: #8b949e; /* Slightly muted color for desc/scenario */
+        }
+
+        .copy-btn {
+            background-color: #4b5563; /* Tailwind gray-600 */
+            color: #f3f4f6; /* Tailwind gray-100 */
+            padding: 0.35rem 0.75rem; /* Adjusted padding for icon consistency */
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            align-self: center;
+            white-space: nowrap;
+            display: inline-flex; /* For aligning icon and text if any */
+            align-items: center;
+            justify-content: center;
+        }
+        .copy-btn svg {
+            width: 0.875rem; /* 14px */
+            height: 0.875rem; /* 14px */
+            fill: currentColor;
+        }
+        .copy-btn:hover {
+            background-color: #6b7280; /* Tailwind gray-500 */
+        }
+        .copy-btn.copied {
+            background-color: #16a34a; /* Tailwind green-600 */
+            color: white;
+        }
+        .search-container {
+            position: sticky;
+            top: 0;
+            background-color: #111827;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            z-index: 10;
+        }
+        #searchInput {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #d1d5db;
+        }
+        #searchInput::placeholder {
+            color: #6b7280;
+        }
+        .category-title {
+            color: #9ca3af;
+            border-bottom-color: #374151;
+        }
+        .message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f9fafb;
+            color: #1f2937;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .message-box.show {
+            opacity: 1;
+        }
+        .example-container {
+            margin-top: 0.5rem;
+        }
+        .example-container pre {
+            margin-bottom: 0.5rem;
+        }
+        .example-label {
+            font-weight: 600; /* Make "Example:" bold */
+            color: #9ca3af;
+            font-size: 0.875rem; /* text-sm */
+            margin-bottom: 0.25rem;
+        }
+
+
+        /* Styles for command color coding (used in examples) */
+        .cmd-token {
+             color: #d1d5db;
+        }
+        .cmd-main {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+        .cmd-option {
+            color: #f472b6;
+        }
+        .cmd-placeholder {
+            color: #fb923c;
+        }
+        .cmd-string {
+            color: #34d399;
+        }
+        .cmd-comment {
+            color: #9ca3af;
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-gray-800 py-3 shadow-sm">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-center space-x-4">
+                <a href="index.html" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </a>
+                <a href="index2.html" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <i class="fas fa-columns mr-2"></i>Kanban
+                </a>
+            </div>
+        </div>
+    </nav>
+    <div class="max-w-screen-2xl mx-auto">
+        <div class="search-container mb-6">
+            <h1 class="text-3xl font-bold text-gray-100 mb-4 text-center">Developer Cheat Sheets</h1>
+            <input type="text" id="searchInput" placeholder="Search across all cheat sheets (e.g., 'git commit', 'docker list images')"
+                   class="w-full p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+        </div>
+
+        <div class="mb-6">
+            <div id="tabsContainer" class="flex space-x-1 border-b border-gray-700">
+            </div>
+        </div>
+
+        <div id="contentContainer">
+        </div>
+    </div>
+
+    <div id="copyMessage" class="message-box">Copied to clipboard!</div>
+
+    <script>
+        const cheatSheetData = {
+            git: {
+                title: "Git",
+                categories: [
+                    {
+                        name: "Setup & Configuration",
+                        entries: [
+                            { command: "git config --global user.name \"[name]\"", description: "Set your username globally for all repositories.", example: "git config --global user.name \"Your Name\"", scenario: "First-time Git setup on a new machine." },
+                            { command: "git config --global user.email \"[email]\"", description: "Set your email globally for all repositories.", example: "git config --global user.email \"youremail@example.com\"", scenario: "First-time Git setup on a new machine." },
+                            { command: "git config --global core.editor \"[editor]\"", description: "Set your default text editor.", example: "git config --global core.editor \"vim\"", scenario: "Customizing the editor Git uses for commit messages." },
+                            { command: "git config --list", description: "List all Git configurations.", example: "git config --list", scenario: "Verifying current Git settings." },
+                            { command: "git help [command]", description: "Get help for a specific Git command.", example: "git help commit", scenario: "Understanding options for a command." },
+                        ]
+                    },
+                    {
+                        name: "Starting a Repository",
+                        entries: [
+                            { command: "git init [project-name]", description: "Initialize a new local Git repository.", example: "git init my-new-project", scenario: "Starting a new project from scratch." },
+                            { command: "git clone [url]", description: "Clone an existing repository from a URL.", example: "git clone https://github.com/user/repository.git", scenario: "Getting a copy of an existing remote project." },
+                        ]
+                    },
+                    {
+                        name: "Making Changes (Staging & Committing)",
+                        entries: [
+                            { command: "git status", description: "Show the working tree status (modified files, staged files).", example: "git status", scenario: "Checking what changes are ready to be committed." },
+                            { command: "git add [file]", description: "Add file contents to the staging area (index).", example: "git add index.html", scenario: "Preparing a specific file for commit." },
+                            { command: "git add .", description: "Add all new and modified files in the current directory to the staging area.", example: "git add .", scenario: "Staging all changes in the project." },
+                            { command: "git add -p", description: "Interactively stage parts of changed files.", example: "git add -p", scenario: "Staging only specific hunks of changes within files." },
+                            { command: "git reset [file]", description: "Unstage a file, but keep the changes in the working directory.", example: "git reset README.md", scenario: "Removing a file from the staging area before committing." },
+                            { command: "git commit -m \"[message]\"", description: "Record changes to the repository with a descriptive message.", example: "git commit -m \"Add initial project structure\"", scenario: "Saving your staged changes." },
+                            { command: "git commit -am \"[message]\"", description: "Stage all tracked files and commit them.", example: "git commit -am \"Fix typo in documentation\"", scenario: "Quickly committing changes to already tracked files." },
+                            { command: "git commit --amend", description: "Modify the last commit.", example: "git commit --amend -m \"A better commit message\"", scenario: "Correcting the last commit message or adding forgotten changes." },
+                            { command: "git diff", description: "Show changes between working directory and staging area.", example: "git diff", scenario: "Reviewing unstaged changes." },
+                            { command: "git diff --staged", description: "Show changes between staging area and the last commit.", example: "git diff --staged", scenario: "Reviewing staged changes before committing." },
+                            { command: "git diff [commit1] [commit2]", description: "Show changes between two commits.", example: "git diff HEAD~2 HEAD", scenario: "Comparing different points in history." },
+                        ]
+                    },
+                    {
+                        name: "Branching & Merging",
+                        entries: [
+                            { command: "git branch", description: "List all local branches. Current branch is marked with *.", example: "git branch", scenario: "Seeing available branches." },
+                            { command: "git branch [branch-name]", description: "Create a new branch.", example: "git branch feature-x", scenario: "Starting work on a new feature in isolation." },
+                            { command: "git checkout [branch-name]", description: "Switch to an existing branch.", example: "git checkout develop", scenario: "Changing your working context to a different branch." },
+                            { command: "git checkout -b [branch-name]", description: "Create a new branch and switch to it.", example: "git checkout -b hotfix-123", scenario: "Creating and starting work on a new branch simultaneously." },
+                            { command: "git merge [branch-name]", description: "Merge the specified branch’s history into the current branch.", example: "git merge feature-x", scenario: "Integrating changes from one branch into another (e.g., feature into develop)." },
+                            { command: "git merge --no-ff [branch-name]", description: "Merge, creating a merge commit even if it was a fast-forward.", example: "git merge --no-ff feature-branch", scenario: "Keeping a record of a feature branch merge in history." },
+                            { command: "git branch -d [branch-name]", description: "Delete a local branch (if merged).", example: "git branch -d feature-x", scenario: "Cleaning up a feature branch after it has been merged." },
+                            { command: "git branch -D [branch-name]", description: "Force delete a local branch (even if not merged).", example: "git branch -D old-feature", scenario: "Removing an unneeded branch with unmerged changes." },
+                            { command: "git branch -m [old-name] [new-name]", description: "Rename a local branch.", example: "git branch -m feature-typo feature-correct", scenario: "Correcting a branch name." },
+                        ]
+                    },
+                    {
+                        name: "Rebasing & History Manipulation",
+                        entries: [
+                            { command: "git rebase [base-branch]", description: "Reapply commits from current branch onto base-branch.", example: "git rebase main (while on feature branch)", scenario: "Updating a feature branch with the latest changes from main, creating a linear history." },
+                            { command: "git rebase -i [commit-ref]", description: "Interactively rebase commits.", example: "git rebase -i HEAD~3", scenario: "Squashing, reordering, or editing recent commits before sharing." },
+                            { command: "git cherry-pick [commit-hash]", description: "Apply the changes introduced by an existing commit.", example: "git cherry-pick abc123xyz", scenario: "Picking a specific commit from one branch and applying it to another." },
+                        ]
+                    },
+                    {
+                        name: "Remote Repositories",
+                        entries: [
+                            { command: "git remote -v", description: "List all configured remote repositories.", example: "git remote -v", scenario: "Checking where your local repository is connected." },
+                            { command: "git remote add [name] [url]", description: "Add a new remote repository.", example: "git remote add origin https://github.com/user/repo.git", scenario: "Connecting your local repository to a remote server." },
+                            { command: "git remote show [remote-name]", description: "Show information about a remote.", example: "git remote show origin", scenario: "Getting details about a remote, including tracked branches." },
+                            { command: "git fetch [remote-name]", description: "Download objects and refs from a remote repository.", example: "git fetch origin", scenario: "Updating your local copy with changes from the remote, without merging." },
+                            { command: "git pull [remote-name] [branch-name]", description: "Fetch from and integrate with another repository or a local branch.", example: "git pull origin main", scenario: "Updating your local branch with changes from the remote and merging them." },
+                            { command: "git push [remote-name] [branch-name]", description: "Update remote refs along with associated objects.", example: "git push origin main", scenario: "Sharing your local commits with the remote repository." },
+                            { command: "git push -u [remote-name] [branch-name]", description: "Push and set upstream tracking for the branch.", example: "git push -u origin feature-branch", scenario: "Pushing a new local branch to remote for the first time and setting it to track." },
+                            { command: "git push [remote-name] --delete [branch-name]", description: "Delete a remote branch.", example: "git push origin --delete old-feature", scenario: "Removing a branch from the remote repository." },
+                            { command: "git push [remote-name] --tags", description: "Push all local tags to the remote repository.", example: "git push origin --tags", scenario: "Sharing tags with others." },
+                            { command: "git branch -r", description: "List remote-tracking branches.", example: "git branch -r", scenario: "Seeing all branches that exist on remotes." },
+                            { command: "git checkout -t [remote-name]/[branch-name]", description: "Create and checkout a local branch tracking a remote branch.", example: "git checkout -t origin/develop", scenario: "Starting to work on an existing remote branch locally." },
+                        ]
+                    },
+                    {
+                        name: "Stashing",
+                        entries: [
+                            { command: "git stash", description: "Temporarily shelve (or stash) changes you've made to your working copy.", example: "git stash", scenario: "Need to switch branches but have uncommitted work." },
+                            { command: "git stash save \"[message]\"", description: "Stash changes with a descriptive message.", example: "git stash save \"WIP on new login form\"", scenario: "Stashing changes with context." },
+                            { command: "git stash list", description: "List all stashed changesets.", example: "git stash list", scenario: "Viewing your saved stashes." },
+                            { command: "git stash pop", description: "Reapply the latest stash and remove it from the stash list.", example: "git stash pop", scenario: "Restoring recently stashed work." },
+                            { command: "git stash apply [stash_id]", description: "Reapply a specific stash but keep it in the stash list.", example: "git stash apply stash@{1}", scenario: "Applying an older stash without removing it." },
+                            { command: "git stash drop [stash_id]", description: "Remove a specific stash from the stash list.", example: "git stash drop stash@{2}", scenario: "Deleting an unneeded stash." },
+                        ]
+                    },
+                    {
+                        name: "Undoing Changes",
+                        entries: [
+                            { command: "git checkout -- [file]", description: "Discard changes in the working directory for a specific file.", example: "git checkout -- config.js", scenario: "Reverting a file to its last committed state." },
+                            { command: "git reset HEAD [file]", description: "Unstage a file (same as git reset [file]).", example: "git reset HEAD index.html", scenario: "Removing a file from the staging area." },
+                            { command: "git revert [commit-hash]", description: "Create a new commit that undoes the changes of a specified commit.", example: "git revert abc123xyz", scenario: "Safely undoing a previous commit that has already been shared." },
+                            { command: "git reset --soft HEAD~1", description: "Move HEAD back one commit, keeping changes staged.", example: "git reset --soft HEAD~1", scenario: "Undoing last commit but keeping changes to re-commit differently." },
+                            { command: "git reset --hard [commit-hash]", description: "Reset current HEAD to the specified commit and discard all changes since then. Use with caution!", example: "git reset --hard HEAD~1", scenario: "Completely removing the last commit and its changes (if not pushed)." },
+                            { command: "git clean -fd", description: "Remove untracked files and directories from the working directory. Use with extreme caution!", example: "git clean -fd", scenario: "Cleaning up the working directory from untracked files/folders." },
+                            { command: "git clean -nfd", description: "Show what would be removed by git clean -fd without actually removing.", example: "git clean -nfd", scenario: "Dry run for cleaning untracked files/folders." },
+                        ]
+                    },
+                    {
+                        name: "History & Logging",
+                        entries: [
+                            { command: "git log", description: "Show commit logs.", example: "git log", scenario: "Viewing the project history." },
+                            { command: "git log --oneline", description: "Show commit logs in a compact, one-line format.", example: "git log --oneline", scenario: "Getting a quick overview of recent commits." },
+                            { command: "git log --graph --oneline --decorate --all", description: "Display the commit history as a graph with branches and tags.", example: "git log --graph --oneline --decorate --all", scenario: "Visualizing branch history." },
+                            { command: "git log -p [file]", description: "Show changes over time for a specific file.", example: "git log -p style.css", scenario: "Tracking how a file has evolved." },
+                            { command: "git log --author=\"[name]\"", description: "Show commits by a specific author.", example: "git log --author=\"John Doe\"", scenario: "Finding commits made by a particular person." },
+                            { command: "git log --grep=\"[pattern]\"", description: "Show commits with messages matching a pattern.", example: "git log --grep=\"fix typo\"", scenario: "Searching commit messages." },
+                            { command: "git blame [file]", description: "Show who changed what and when in a file, line by line.", example: "git blame script.js", scenario: "Finding out who last modified a specific line of code." },
+                            { command: "git shortlog -sn", description: "Summarize git log output by author.", example: "git shortlog -sn --all", scenario: "Seeing contribution counts by author." },
+                        ]
+                    },
+                    {
+                        name: "Tagging",
+                        entries: [
+                            { command: "git tag", description: "List all tags.", example: "git tag", scenario: "Viewing existing release points." },
+                            { command: "git tag -a [tag-name] -m \"[message]\"", description: "Create an annotated tag.", example: "git tag -a v1.0 -m \"Version 1.0 release\"", scenario: "Marking a significant point in history, like a release." },
+                            { command: "git tag [tag-name]", description: "Create a lightweight tag.", example: "git tag v1.0-lw", scenario: "Creating a private or temporary tag." },
+                            { command: "git show [tag-name]", description: "Show information about a tag.", example: "git show v1.0", scenario: "Viewing details of a specific tag." },
+                            { command: "git tag -d [tag-name]", description: "Delete a local tag.", example: "git tag -d v1.0-alpha", scenario: "Removing a local tag." },
+                            { command: "git push [remote-name] --delete tag [tag-name]", description: "Delete a remote tag.", example: "git push origin --delete tag v1.0-alpha", scenario: "Removing a tag from the remote repository." },
+                        ]
+                    }
+                ]
+            },
+            docker: {
+                title: "Docker",
+                categories: [
+                    {
+                        name: "Image Management",
+                        entries: [
+                            { command: "docker images", description: "List all local images.", example: "docker images", scenario: "Checking available Docker images on your system." },
+                            { command: "docker pull [image_name]:[tag]", description: "Download an image from a registry (e.g., Docker Hub).", example: "docker pull ubuntu:latest", scenario: "Getting a new Docker image." },
+                            { command: "docker rmi [image_id_or_name]", description: "Remove one or more local images.", example: "docker rmi my-custom-app:1.0", scenario: "Cleaning up unused images." },
+                            { command: "docker build -t [image_name]:[tag] [path_to_dockerfile]", description: "Build an image from a Dockerfile.", example: "docker build -t myapp:v1 .", scenario: "Creating a custom Docker image for your application." },
+                            { command: "docker history [image_name]", description: "Show the history of an image.", example: "docker history nginx", scenario: "Inspecting the layers of an image." },
+                            { command: "docker image inspect [image_name_or_id]", description: "Display detailed information on one or more images.", example: "docker image inspect ubuntu:latest", scenario: "Getting low-level information about an image." },
+                            { command: "docker tag [source_image]:[tag] [target_image]:[tag]", description: "Tag an image.", example: "docker tag myapp:latest myusername/myapp:v1.0", scenario: "Preparing an image for pushing to a registry or versioning." },
+                            { command: "docker login [registry_url]", description: "Log in to a Docker registry.", example: "docker login docker.io", scenario: "Authenticating to push/pull private images." },
+                            { command: "docker push [image_name]:[tag]", description: "Push an image or a repository to a registry.", example: "docker push myusername/myapp:v1.0", scenario: "Sharing your custom image." },
+                        ]
+                    },
+                    {
+                        name: "Container Management",
+                        entries: [
+                            { command: "docker ps", description: "List running containers.", example: "docker ps", scenario: "Checking active containers." },
+                            { command: "docker ps -a", description: "List all containers (running and stopped).", example: "docker ps -a", scenario: "Viewing all containers, including those that have exited." },
+                            { command: "docker run [options] [image_name] [command]", description: "Create and start a new container from an image.", example: "docker run -d -p 8080:80 --name web_server nginx", scenario: "Running an application inside a Docker container." },
+                            { command: "docker start [container_id_or_name]", description: "Start one or more stopped containers.", example: "docker start my_web_server", scenario: "Restarting a previously stopped container." },
+                            { command: "docker stop [container_id_or_name]", description: "Stop one or more running containers.", example: "docker stop my_web_server", scenario: "Gracefully stopping a container." },
+                            { command: "docker restart [container_id_or_name]", description: "Restart one or more containers.", example: "docker restart my_app_instance", scenario: "Quickly restarting a container." },
+                            { command: "docker rm [container_id_or_name]", description: "Remove one or more containers.", example: "docker rm old_container", scenario: "Cleaning up stopped containers." },
+                            { command: "docker rm $(docker ps -aq)", description: "Remove all stopped containers.", example: "docker rm $(docker ps -aq)", scenario: "Bulk cleaning of stopped containers." },
+                            { command: "docker logs [container_id_or_name]", description: "Fetch the logs of a container.", example: "docker logs -f my_app_instance", scenario: "Debugging or monitoring a containerized application (with -f for follow)." },
+                            { command: "docker exec -it [container_id_or_name] [command]", description: "Run a command in a running container.", example: "docker exec -it my_db_container bash", scenario: "Accessing a shell or running a utility inside a container." },
+                            { command: "docker cp [src_path] [container_id]:[dest_path]", description: "Copy files/folders between a container and the local filesystem.", example: "docker cp ./app.conf my_container:/etc/app.conf", scenario: "Transferring configuration or data files." },
+                            { command: "docker inspect [container_id_or_name]", description: "Display detailed information on one or more containers.", example: "docker inspect my_web_server", scenario: "Getting low-level information about a container, including IP address." },
+                        ]
+                    },
+                    {
+                        name: "Docker Compose",
+                        entries: [
+                            { command: "docker-compose up", description: "Build, (re)create, start, and attach to containers for a service.", example: "docker-compose up -d --build", scenario: "Starting a multi-container application, ensuring images are rebuilt and running in detached mode." },
+                            { command: "docker-compose down", description: "Stop and remove containers, networks, images, and volumes.", example: "docker-compose down -v --rmi all", scenario: "Completely tearing down a multi-container application, including volumes and images." },
+                            { command: "docker-compose ps", description: "List containers for a Compose project.", example: "docker-compose ps", scenario: "Checking the status of services in a Compose application." },
+                            { command: "docker-compose logs [service_name]", description: "View output from containers.", example: "docker-compose logs -f web_server", scenario: "Debugging or monitoring a specific service in a Compose application (with -f for follow)." },
+                            { command: "docker-compose build [service_name]", description: "Build or rebuild services.", example: "docker-compose build api", scenario: "Rebuilding an image for a service after code changes." },
+                            { command: "docker-compose exec [service_name] [command]", description: "Execute a command in a running container of a service.", example: "docker-compose exec db psql -U user -d database", scenario: "Running a command inside a service managed by Compose." },
+                            { command: "docker-compose config", description: "Validate and view the Compose file.", example: "docker-compose -f docker-compose.prod.yml config", scenario: "Checking the syntax and effective configuration of a Compose file." },
+                        ]
+                    },
+                    {
+                        name: "Networking",
+                        entries: [
+                            { command: "docker network ls", description: "List networks.", example: "docker network ls", scenario: "Viewing available Docker networks." },
+                            { command: "docker network create [network_name]", description: "Create a new network.", example: "docker network create --driver bridge my_app_net", scenario: "Setting up a custom bridge network for containers to communicate." },
+                            { command: "docker network inspect [network_name]", description: "Display detailed information on one or more networks.", example: "docker network inspect bridge", scenario: "Understanding the configuration of a network." },
+                            { command: "docker network connect [network_name] [container_name]", description: "Connect a container to a network.", example: "docker network connect my_app_net existing_container", scenario: "Adding an existing container to a specific network." },
+                            { command: "docker network disconnect [network_name] [container_name]", description: "Disconnect a container from a network.", example: "docker network disconnect my_app_net old_container", scenario: "Removing a container from a network." },
+                        ]
+                    },
+                    {
+                        name: "Volumes",
+                        entries: [
+                            { command: "docker volume ls", description: "List volumes.", example: "docker volume ls", scenario: "Checking all Docker volumes." },
+                            { command: "docker volume create [volume_name]", description: "Create a volume.", example: "docker volume create my_db_data", scenario: "Creating a named volume for persistent data storage." },
+                            { command: "docker volume inspect [volume_name]", description: "Display detailed information on one or more volumes.", example: "docker volume inspect my_db_data", scenario: "Getting details about a volume, like its mountpoint." },
+                            { command: "docker volume rm [volume_name]", description: "Remove one or more volumes.", example: "docker volume rm old_data_volume", scenario: "Deleting unused volumes." },
+                            { command: "docker volume prune", description: "Remove all unused local volumes.", example: "docker volume prune -f", scenario: "Cleaning up unused volumes to free disk space (with -f to force)." },
+                        ]
+                    }
+                ]
+            },
+            bash: {
+                title: "Bash",
+                categories: [
+                    {
+                        name: "File & Directory Management",
+                        entries: [
+                            { command: "ls -lha", description: "List directory contents with details, hidden files, and human-readable sizes.", example: "ls -lha /var/log", scenario: "Comprehensive view of files and directories." },
+                            { command: "cd [directory]", description: "Change the current directory.", example: "cd /var/log", scenario: "Navigating the file system." },
+                            { command: "cd -", description: "Change to the previous working directory.", example: "cd -", scenario: "Quickly toggling between two directories." },
+                            { command: "pwd", description: "Print name of current/working directory.", example: "pwd", scenario: "Finding out your current location in the file system." },
+                            { command: "mkdir [directory_name]", description: "Create a new directory.", example: "mkdir new_project", scenario: "Making a new folder." },
+                            { command: "mkdir -p /path/to/nested/dir", description: "Create parent directories as needed.", example: "mkdir -p project/src/components", scenario: "Creating a nested directory structure in one go." },
+                            { command: "rm [file_name]", description: "Remove files.", example: "rm temp.txt", scenario: "Deleting a file." },
+                            { command: "rm -r [directory_name]", description: "Remove directories and their contents recursively.", example: "rm -r old_project", scenario: "Deleting a folder and everything in it." },
+                            { command: "rm -rf [target]", description: "Force remove files/directories without prompting. Use with extreme caution!", example: "rm -rf /tmp/obsolete_stuff", scenario: "Forcefully deleting items." },
+                            { command: "cp [source] [destination]", description: "Copy files and directories.", example: "cp main.py backup/main_backup.py", scenario: "Making a copy of a file." },
+                            { command: "cp -r [source_dir] [dest_dir]", description: "Copy directories recursively.", example: "cp -r project_v1 project_v2", scenario: "Duplicating an entire directory." },
+                            { command: "mv [source] [destination]", description: "Move (rename) files and directories.", example: "mv report.docx final_report.docx", scenario: "Renaming a file or moving it to a different location." },
+                            { command: "touch [file_name]", description: "Create an empty file or update timestamp of existing file.", example: "touch new_script.sh", scenario: "Quickly creating a new file or updating modification time." },
+                            { command: "find [path] -name \"[pattern]\"", description: "Search for files in a directory hierarchy by name.", example: "find . -name \"*.log\"", scenario: "Locating files matching a certain pattern." },
+                            { command: "find [path] -type f -mtime -[days]", description: "Find files modified within the last N days.", example: "find /var/log -type f -mtime -7", scenario: "Finding recently modified files." },
+                            { command: "find [path] -type d -empty -delete", description: "Find and delete empty directories.", example: "find . -type d -empty -delete", scenario: "Cleaning up empty folders." },
+                            { command: "ln -s [target_file] [link_name]", description: "Create a symbolic (soft) link.", example: "ln -s /opt/app/config.ini ./app_config.ini", scenario: "Creating a shortcut to a file or directory." },
+                        ]
+                    },
+                    {
+                        name: "Text Processing",
+                        entries: [
+                            { command: "cat [file]", description: "Concatenate files and print on the standard output.", example: "cat error.log", scenario: "Displaying the content of a file." },
+                            { command: "less [file]", description: "View file content page by page.", example: "less /var/log/syslog", scenario: "Interactively viewing large files." },
+                            { command: "grep \"[pattern]\" [file]", description: "Print lines matching a pattern.", example: "grep -i \"error\" server.log", scenario: "Searching for specific text within a file (case-insensitive with -i)." },
+                            { command: "grep -r \"[pattern]\" [directory]", description: "Recursively search for pattern in files within a directory.", example: "grep -r \"TODO:\" ./src", scenario: "Finding a pattern across multiple files in a project." },
+                            { command: "head [file]", description: "Output the first part of files.", example: "head -n 20 access.log", scenario: "Viewing the beginning of a large file." },
+                            { command: "tail [file]", description: "Output the last part of files.", example: "tail -f app.log", scenario: "Monitoring log files in real-time." },
+                            { command: "wc [file]", description: "Print newline, word, and byte counts for each file.", example: "wc -l data.txt", scenario: "Counting lines, words, or characters in a file." },
+                            { command: "sort [file]", description: "Sort lines of text files.", example: "sort names.txt", scenario: "Ordering data alphabetically or numerically." },
+                            { command: "uniq [file]", description: "Report or omit repeated lines (requires sorted input).", example: "sort data.txt | uniq -c", scenario: "Counting occurrences of unique lines." },
+                            { command: "cut -d'[delimiter]' -f[fields] [file]", description: "Remove sections from each line of files.", example: "cut -d',' -f1,3 data.csv", scenario: "Extracting specific columns from delimited data." },
+                            { command: "tr '[set1]' '[set2]'", description: "Translate or delete characters.", example: "cat text.txt | tr 'a-z' 'A-Z'", scenario: "Converting text to uppercase/lowercase, or replacing characters." },
+                        ]
+                    },
+                    {
+                        name: "Permissions",
+                        entries: [
+                            { command: "chmod [permissions] [file]", description: "Change file mode bits (e.g., 755, u+x).", example: "chmod 755 script.sh", scenario: "Making a script executable or changing access permissions." },
+                            { command: "chown [user]:[group] [file]", description: "Change file owner and group.", example: "chown www-data:www-data index.html", scenario: "Setting the correct ownership for web server files." },
+                        ]
+                    },
+                     {
+                        name: "Process Management & Job Control",
+                        entries: [
+                            { command: "ps aux", description: "Report a snapshot of the current processes.", example: "ps aux | grep python", scenario: "Listing running processes, often filtered with grep." },
+                            { command: "top", description: "Display Linux processes in real-time.", example: "top", scenario: "Monitoring system resource usage and running processes interactively." },
+                            { command: "htop", description: "Interactive process viewer (often more user-friendly than top).", example: "htop", scenario: "An enhanced alternative to top for process monitoring." },
+                            { command: "kill [pid]", description: "Send a signal to a process (default is TERM).", example: "kill 12345", scenario: "Terminating a misbehaving process." },
+                            { command: "kill -9 [pid]", description: "Forcefully kill a process (SIGKILL).", example: "kill -9 12345", scenario: "Forcibly stopping a non-responsive process." },
+                            { command: "killall [process_name]", description: "Kill processes by name.", example: "killall firefox", scenario: "Stopping all instances of a particular program." },
+                            { command: "jobs", description: "List active jobs (background processes).", example: "jobs", scenario: "Checking processes running in the background of the current shell." },
+                            { command: "bg %[job_id]", description: "Put a stopped job in the background.", example: "bg %1", scenario: "Resuming a stopped process in the background." },
+                            { command: "fg %[job_id]", description: "Bring a job to the foreground.", example: "fg %1", scenario: "Bringing a background process to the foreground to interact with it." },
+                            { command: "[command] &", description: "Run a command in the background.", example: "sleep 300 &", scenario: "Starting a long-running task without blocking the terminal." },
+                            { command: "Ctrl+Z", description: "Suspend (stop) the current foreground process.", example: "(Press Ctrl+Z while a command is running)", scenario: "Pausing a running command to do something else." },
+                            { command: "nohup [command] &", description: "Run a command immune to hangups, with output to nohup.out.", example: "nohup ./my_server.sh &", scenario: "Running a command that should continue after you log out." },
+                        ]
+                    },
+                    {
+                        name: "Shell Control & Variables",
+                        entries: [
+                            { command: "export VARNAME=\"value\"", description: "Set an environment variable.", example: "export API_KEY=\"your_api_key_here\"", scenario: "Making a variable available to child processes." },
+                            { command: "echo $VARNAME", description: "Display the value of a variable.", example: "echo $PATH", scenario: "Checking the value of an environment variable." },
+                            { command: "unset VARNAME", description: "Remove an environment variable.", example: "unset TEMP_VAR", scenario: "Deleting a variable from the environment." },
+                            { command: "[command1] | [command2]", description: "Pipe the output of command1 to the input of command2.", example: "ls -l | grep .txt", scenario: "Combining commands to perform complex tasks." },
+                            { command: "[command] > [file]", description: "Redirect standard output to a file, overwriting the file.", example: "date > current_date.txt", scenario: "Saving the output of a command to a file." },
+                            { command: "[command] >> [file]", description: "Redirect standard output to a file, appending to the file.", example: "echo \"New log entry\" >> app.log", scenario: "Adding command output to the end of an existing file." },
+                            { command: "[command] 2> [error_file]", description: "Redirect standard error to a file.", example: "./run_script.sh 2> error.log", scenario: "Capturing error messages separately." },
+                            { command: "[command] &> [output_file]", description: "Redirect both standard output and standard error to a file.", example: "./backup.sh &> backup.log", scenario: "Logging all output of a script." },
+                            { command: "history", description: "Display command history.", example: "history | tail -n 20", scenario: "Viewing recently executed commands." },
+                            { command: "!!", description: "Execute the last command.", example: "!!", scenario: "Quickly re-running the previous command (e.g., after a sudo error)." },
+                            { command: "!N", description: "Execute the Nth command from history.", example: "!101", scenario: "Re-running a specific command from history." },
+                            { command: "Ctrl+R", description: "Reverse search command history.", example: "(Press Ctrl+R, then type part of command)", scenario: "Finding and re-running a previous command interactively." },
+                        ]
+                    },
+                    {
+                        name: "Networking & System Info",
+                        entries: [
+                            { command: "ping [host]", description: "Send ICMP ECHO_REQUEST packets to network hosts.", example: "ping google.com", scenario: "Checking network connectivity to a host." },
+                            { command: "ifconfig / ip addr", description: "Display or configure network interface parameters.", example: "ip addr show", scenario: "Viewing IP addresses and network interface details." },
+                            { command: "netstat -tulnp", description: "Show network connections, listening ports, and PIDs.", example: "netstat -tulnp | grep LISTEN", scenario: "Finding out which services are listening on which ports." },
+                            { command: "ssh [user]@[host]", description: "OpenSSH SSH client (remote login program).", example: "ssh myuser@remote.server.com", scenario: "Connecting to a remote server securely." },
+                            { command: "scp [source] [destination]", description: "Secure copy (remote file copy program).", example: "scp localfile.txt user@remote:/home/user/", scenario: "Copying files to or from a remote server over SSH." },
+                            { command: "wget [URL]", description: "Non-interactive network downloader.", example: "wget https://example.com/file.zip", scenario: "Downloading files from the internet via command line." },
+                            { command: "curl [URL]", description: "Transfer data from or to a server (supports many protocols).", example: "curl -O https://example.com/data.json", scenario: "Downloading files, testing APIs." },
+                            { command: "df -h", description: "Report file system disk space usage (human-readable).", example: "df -h", scenario: "Checking available disk space on mounted filesystems." },
+                            { command: "du -sh [directory]", description: "Estimate file space usage (summary, human-readable).", example: "du -sh /var/log", scenario: "Checking the size of a directory." },
+                            { command: "uname -a", description: "Print all system information.", example: "uname -a", scenario: "Getting kernel version and other system details." },
+                            { command: "free -h", description: "Display amount of free and used memory in the system (human-readable).", example: "free -h", scenario: "Checking memory usage." },
+                        ]
+                    },
+                    {
+                        name: "Archiving & Compression",
+                        entries: [
+                            { command: "tar -czvf [archive.tar.gz] [directory_to_archive]", description: "Create a gzipped tar archive.", example: "tar -czvf project_backup.tar.gz ./my_project", scenario: "Backing up or bundling a directory." },
+                            { command: "tar -xzvf [archive.tar.gz]", description: "Extract a gzipped tar archive.", example: "tar -xzvf project_backup.tar.gz", scenario: "Unpacking an archive." },
+                            { command: "tar -cjvf [archive.tar.bz2] [directory]", description: "Create a bzip2 compressed tar archive.", example: "tar -cjvf logs.tar.bz2 /var/log/", scenario: "Creating a highly compressed archive." },
+                            { command: "tar -xjvf [archive.tar.bz2]", description: "Extract a bzip2 compressed tar archive.", example: "tar -xjvf logs.tar.bz2 -C /tmp/extracted_logs", scenario: "Extracting bzip2 archives to a specific directory." },
+                            { command: "zip -r [archive.zip] [directory]", description: "Create a zip archive.", example: "zip -r documents.zip ./MyDocuments", scenario: "Creating a standard zip file." },
+                            { command: "unzip [archive.zip]", description: "Extract files from a zip archive.", example: "unzip documents.zip -d ./extracted_docs", scenario: "Unzipping files." },
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const tabsContainer = document.getElementById('tabsContainer');
+        const contentContainer = document.getElementById('contentContainer');
+        const searchInput = document.getElementById('searchInput');
+        const copyMessage = document.getElementById('copyMessage');
+        let activeTabKey = Object.keys(cheatSheetData)[0];
+
+        const SVG_COPY_ICON = `
+            <svg viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+            </svg>`;
+
+        function showMessage(message) {
+            copyMessage.textContent = message;
+            copyMessage.classList.add('show');
+            setTimeout(() => {
+                copyMessage.classList.remove('show');
+            }, 2000);
+        }
+
+        function copyToClipboard(text, btn) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        showMessage('Copied!');
+                        if(btn) {
+                            const originalContent = btn.innerHTML;
+                            btn.innerHTML = 'Copied!';
+                            btn.classList.add('copied');
+                            setTimeout(() => {
+                                btn.innerHTML = originalContent;
+                                btn.classList.remove('copied');
+                            }, 1500);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                        showMessage('Failed to copy.');
+                    });
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showMessage('Copied!');
+                     if(btn) {
+                        const originalContent = btn.innerHTML;
+                        btn.innerHTML = 'Copied!';
+                        btn.classList.add('copied');
+                        setTimeout(() => {
+                            btn.innerHTML = originalContent;
+                            btn.classList.remove('copied');
+                        }, 1500);
+                    }
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                    showMessage('Failed to copy (fallback).');
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function colorCodeCommand(commandStr) {
+            if (!commandStr) return '';
+            const placeholderRegex = /(\[[a-zA-Z0-9\-_:]+\])/g;
+            const stringRegex = /(".*?"|'.*?')/g;
+            const tokens = commandStr.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
+            let firstWord = true;
+
+            const htmlParts = tokens.map(token => {
+                if (firstWord && !token.startsWith('-') && !token.match(placeholderRegex) && !token.match(stringRegex)) {
+                    firstWord = false;
+                    return `<span class="cmd-main">${token}</span>`;
+                }
+                if (token.match(placeholderRegex)) {
+                    return token.replace(placeholderRegex, '<span class="cmd-placeholder">$1</span>');
+                }
+                if (token.startsWith('--') || (token.startsWith('-') && token.length > 1 && !parseFloat(token))) {
+                    const parts = token.split('=');
+                    if (parts.length > 1 && (parts[0].startsWith('--') || parts[0].startsWith('-'))) {
+                        let valuePart = parts.slice(1).join('=');
+                        if (valuePart.match(stringRegex)) {
+                             valuePart = valuePart.replace(stringRegex, '<span class="cmd-string">$1</span>');
+                        } else if (valuePart.match(placeholderRegex)){
+                             valuePart = valuePart.replace(placeholderRegex, '<span class="cmd-placeholder">$1</span>');
+                        } else {
+                             valuePart = `<span class="cmd-token">${valuePart}</span>`;
+                        }
+                        return `<span class="cmd-option">${parts[0]}</span>=<span class="cmd-token">${valuePart}</span>`;
+                    }
+                    return `<span class="cmd-option">${token}</span>`;
+                }
+                if (token.match(stringRegex)) {
+                    return token.replace(stringRegex, '<span class="cmd-string">$1</span>');
+                }
+                return `<span class="cmd-token">${token}</span>`;
+            });
+            return htmlParts.join(' ');
+        }
+
+
+        function renderContent(toolKey) {
+            const toolData = cheatSheetData[toolKey];
+            if (!toolData) return;
+
+            contentContainer.innerHTML = '';
+            const toolDiv = document.createElement('div');
+            toolDiv.id = `content-${toolKey}`;
+
+            toolData.categories.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'mb-8 category-wrapper';
+
+                const categoryTitle = document.createElement('h2');
+                categoryTitle.className = 'text-2xl font-semibold mb-4 pb-2 border-b category-title';
+                categoryTitle.textContent = category.name;
+                categoryDiv.appendChild(categoryTitle);
+
+                const entriesGridContainer = document.createElement('div');
+                entriesGridContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
+
+                category.entries.forEach(entry => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'content-entry';
+                    entryDiv.dataset.searchText = `${entry.command || ''} ${entry.description || ''} ${entry.example || ''} ${entry.scenario || ''}`.toLowerCase();
+
+                    if (entry.command) {
+                        const commandTitle = document.createElement('h3');
+
+                        const codeWrapper = document.createElement('div');
+                        codeWrapper.className = 'command-code-wrapper';
+
+                        const codeEl = document.createElement('code');
+                        codeEl.textContent = entry.command; // Main command is NOT color-coded
+                        codeWrapper.appendChild(codeEl);
+                        commandTitle.appendChild(codeWrapper);
+
+                        const copyCmdBtn = document.createElement('button');
+                        copyCmdBtn.className = 'copy-btn';
+                        copyCmdBtn.innerHTML = 'Copy'; // Text for main command's copy button
+                        copyCmdBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            copyToClipboard(entry.command, copyCmdBtn);
+                        };
+                        commandTitle.appendChild(copyCmdBtn);
+                        entryDiv.appendChild(commandTitle);
+                    }
+
+                    if (entry.description) {
+                        const descP = document.createElement('p');
+                        descP.className = 'desc-scenario-text'; // Apply smaller font class
+                        descP.innerHTML = `<strong>Description:</strong> ${entry.description}`;
+                        entryDiv.appendChild(descP);
+                    }
+
+                    if (entry.scenario) {
+                        const scenarioP = document.createElement('p');
+                        scenarioP.className = 'desc-scenario-text'; // Apply smaller font class
+                        scenarioP.innerHTML = `<strong>Scenario:</strong> ${entry.scenario}`;
+                        entryDiv.appendChild(scenarioP);
+                    }
+
+                    if (entry.example) {
+                        const exampleContainer = document.createElement('div');
+                        exampleContainer.className = 'example-container mt-auto pt-2';
+
+                        const exampleLabelP = document.createElement('p'); // Changed from exampleP to exampleLabelP
+                        exampleLabelP.className = 'example-label'; // Added class for "Example:" label
+                        exampleLabelP.innerHTML = `<strong>Example:</strong>`;
+                        exampleContainer.appendChild(exampleLabelP);
+
+                        const pre = document.createElement('pre');
+                        const code = document.createElement('code');
+                        code.innerHTML = colorCodeCommand(entry.example); // Example command IS color-coded
+                        pre.appendChild(code);
+                        exampleContainer.appendChild(pre);
+
+                        const copyExBtn = document.createElement('button');
+                        copyExBtn.className = 'copy-btn';
+                        copyExBtn.innerHTML = SVG_COPY_ICON; // Use SVG icon
+                        copyExBtn.setAttribute('aria-label', 'Copy example'); // For accessibility
+                        copyExBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            copyToClipboard(entry.example, copyExBtn);
+                        };
+
+                        exampleContainer.appendChild(copyExBtn);
+                        entryDiv.appendChild(exampleContainer);
+                    }
+
+                    entriesGridContainer.appendChild(entryDiv);
+                });
+                categoryDiv.appendChild(entriesGridContainer);
+                toolDiv.appendChild(categoryDiv);
+            });
+            contentContainer.appendChild(toolDiv);
+        }
+
+        function setupTabs() {
+            tabsContainer.innerHTML = '';
+            Object.keys(cheatSheetData).forEach(key => {
+                const button = document.createElement('button');
+                button.className = 'tab-button px-4 py-2 font-medium text-md focus:outline-none';
+                button.textContent = cheatSheetData[key].title;
+                button.dataset.toolKey = key;
+
+                if (!cheatSheetData[activeTabKey]) {
+                    activeTabKey = Object.keys(cheatSheetData)[0];
+                }
+
+                if (key === activeTabKey) {
+                    button.classList.add('active');
+                }
+                button.onclick = () => {
+                    activeTabKey = key;
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderContent(key);
+                    filterContent(searchInput.value.toLowerCase());
+                };
+                tabsContainer.appendChild(button);
+            });
+        }
+
+        function filterContent(searchTerm) {
+            const allEntries = document.querySelectorAll('.content-entry');
+
+            allEntries.forEach(entry => {
+                const textToSearch = entry.dataset.searchText;
+                if (textToSearch.includes(searchTerm)) {
+                    entry.style.display = 'flex';
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+
+            document.querySelectorAll('.category-wrapper').forEach(categoryDiv => {
+                const visibleEntries = categoryDiv.querySelectorAll('.content-entry[style*="display: flex"], .content-entry:not([style*="display: none"])');
+                const categoryTitle = categoryDiv.querySelector('.category-title');
+                if (visibleEntries.length > 0) {
+                    if (categoryTitle) categoryTitle.style.display = '';
+                    categoryDiv.style.display = '';
+                } else {
+                    if (categoryTitle) categoryTitle.style.display = 'none';
+                     categoryDiv.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            filterContent(e.target.value.toLowerCase());
+        });
+
+        // Initial setup
+        setupTabs();
+        if (activeTabKey && cheatSheetData[activeTabKey]) {
+            renderContent(activeTabKey);
+        } else if (Object.keys(cheatSheetData).length > 0) {
+            activeTabKey = Object.keys(cheatSheetData)[0];
+            renderContent(activeTabKey);
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.toolKey === activeTabKey) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        if (!searchInput.value) {
+             document.querySelectorAll('.category-wrapper, .category-title').forEach(el => el.style.display = '');
+        }
+    </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Cheat Sheets - Dark Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Tailwind gray-900 */
+            color: #d1d5db; /* Tailwind gray-300 */
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+            color: #9ca3af; /* Tailwind gray-400 */
+            border-bottom-width: 2px;
+            border-color: transparent;
+        }
+        .tab-button:hover {
+            border-color: #4b5563; /* Tailwind gray-600 */
+            color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        .tab-button.active {
+            border-color: #3b82f6; /* Tailwind blue-500 */
+            color: #60a5fa; /* Tailwind blue-400 */
+            background-color: #1f2937; /* Tailwind gray-800 */
+        }
+        .content-entry { /* For Git, Docker, Bash tabs */
+            border: 1px solid #374151; /* Tailwind gray-700 */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            padding: 1rem; /* Tailwind p-4 */
+            background-color: #1f2937; /* Tailwind gray-800 */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Tailwind shadow-sm */
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .content-entry h3 { /* For the main command display */
+            font-size: 1.125rem; /* Tailwind text-lg */
+            font-weight: 600; /* Tailwind font-semibold */
+            color: #f3f4f6; /* Tailwind gray-100 */
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .content-entry h3 .command-code-wrapper {
+            flex-grow: 1;
+            margin-right: 0.5rem;
+        }
+        .content-entry h3 code { /* Main command in detailed view */
+            background-color: #374151; /* Tailwind gray-700 */
+            color: #e5e7eb; /* Tailwind gray-200 */
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            word-break: break-all;
+        }
+        .content-entry pre { /* Example commands in <pre> */
+            background-color: #272e3b;
+            border: 1px solid #4b5563; /* Tailwind gray-600 */
+            border-radius: 0.25rem;
+            margin-top: 0.25rem;
+        }
+        .content-entry pre code {
+            display: block;
+            padding: 0.75rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: transparent;
+            color: #d1d5db;
+        }
+        .content-entry p {
+            margin-bottom: 0.5rem;
+            color: #9ca3af; /* Tailwind gray-400 */
+        }
+        .desc-scenario-text {
+            font-size: 0.8rem;
+            color: #8b949e;
+        }
+
+        .copy-btn, .details-btn { /* Shared styles for small icon buttons */
+            color: #9ca3af; /* Tailwind gray-400 */
+            padding: 4px 6px; /* Smaller padding for icon buttons */
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #374151; /* Tailwind gray-700 */
+        }
+        .copy-btn svg, .details-btn svg {
+            width: 12px; /* Smaller icon */
+            height: 12px;
+            fill: currentColor;
+        }
+        .copy-btn:hover, .details-btn:hover {
+            background-color: #4b5563; /* Tailwind gray-600 */
+            color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        .copy-btn.copied { /* Specific to copy button when copied */
+            background-color: #16a34a; /* Tailwind green-600 */
+            color: white !important; /* Ensure text is white */
+        }
+        /* Larger copy buttons (like in detailed view or modal) */
+        .copy-btn-text {
+            background-color: #4b5563; /* Tailwind gray-600 */
+            color: #f3f4f6; /* Tailwind gray-100 */
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            align-self: center;
+            white-space: nowrap;
+        }
+        .copy-btn-text:hover {
+            background-color: #6b7280; /* Tailwind gray-500 */
+        }
+        .copy-btn-text.copied {
+             background-color: #16a34a; /* Tailwind green-600 */
+            color: white;
+        }
+        .copy-btn-text svg { /* Icon within text button */
+             width: 0.875rem;
+            height: 0.875rem;
+            margin-right: 0.25rem;
+        }
+
+
+        .search-container {
+            position: sticky;
+            top: 0;
+            background-color: #111827; /* Match body background */
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            z-index: 10;
+        }
+        #searchInput {
+            background-color: #1f2937; /* Tailwind gray-800 */
+            border: 1px solid #374151; /* Tailwind gray-700 */
+            color: #d1d5db; /* Tailwind gray-300 */
+        }
+        #searchInput::placeholder {
+            color: #6b7280; /* Tailwind gray-500 */
+        }
+        .category-title {
+            color: #9ca3af; /* Tailwind gray-400 */
+            border-bottom-color: #374151; /* Tailwind gray-700 */
+        }
+        .message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f9fafb; /* Light background for contrast */
+            color: #1f2937; /* Dark text */
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1050; /* Higher than modal */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .message-box.show {
+            opacity: 1;
+        }
+        .example-container {
+            margin-top: 0.5rem;
+        }
+        .example-container pre {
+            margin-bottom: 0.5rem;
+        }
+        .example-label {
+            font-weight: 600;
+            color: #9ca3af;
+            font-size: 0.875rem; /* text-sm */
+            margin-bottom: 0.25rem;
+        }
+
+        /* Styles for command color coding (used in examples) */
+        .cmd-token { color: #d1d5db; }
+        .cmd-main { color: #60a5fa; font-weight: 600; }
+        .cmd-option { color: #f472b6; }
+        .cmd-placeholder { color: #fb923c; }
+        .cmd-string { color: #34d399; }
+        .cmd-comment { color: #9ca3af; }
+
+        /* Styles for "All Commands" Tab */
+        .all-commands-list-container {
+            display: grid;
+            /* Consider 2 columns on wider screens for density */
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 6px; /* Small gap for density */
+        }
+        .all-command-entry { /* Each command item in the "All Commands" tab */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px; /* Dense padding */
+            background-color: #1f2937; /* Tailwind gray-800 */
+            border: 1px solid #374151; /* Tailwind gray-700 */
+            border-radius: 4px; /* Slightly smaller radius */
+        }
+        .all-command-entry .command-text { /* The command string itself */
+            font-family: 'Courier New', Courier, monospace;
+            color: #e5e7eb; /* Tailwind gray-200 */
+            font-size: 0.875rem; /* text-sm */
+            word-break: break-all;
+            margin-right: 8px; /* Space before action buttons */
+            flex-grow: 1; /* Allow text to take available space */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .all-command-entry .actions-group {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0; /* Prevent buttons from shrinking */
+        }
+        .all-command-entry .actions-group .details-btn {
+            margin-right: 4px; /* Space between details and copy */
+        }
+
+        /* Modal Styles */
+        #commandDetailModal.hidden {
+            display: none;
+        }
+        #commandDetailModal pre {
+            background-color: #272e3b; /* Darker than modal body for contrast */
+            border: 1px solid #4b5563;
+        }
+        #commandDetailModal pre code { /* Ensure code inside modal pre is styled */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.875rem;
+            color: #d1d5db;
+        }
+
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-gray-800 py-3 shadow-sm">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-center space-x-4">
+                <a href="index.html" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </a>
+                <a href="index2.html" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <i class="fas fa-columns mr-2"></i>Kanban
+                </a>
+            </div>
+        </div>
+    </nav>
+    <div class="max-w-screen-2xl mx-auto">
+        <div class="search-container mb-6">
+            <h1 class="text-3xl font-bold text-gray-100 mb-4 text-center">Developer Cheat Sheets</h1>
+            <input type="text" id="searchInput" placeholder="Search across all cheat sheets (e.g., 'git commit', 'docker list images')"
+                   class="w-full p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+        </div>
+
+        <div class="mb-6">
+            <div id="tabsContainer" class="flex space-x-1 border-b border-gray-700">
+                </div>
+        </div>
+
+        <div id="contentContainer">
+            </div>
+    </div>
+
+    <div id="copyMessage" class="message-box">Copied to clipboard!</div>
+
+    <div id="commandDetailModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modalCommandText" class="text-lg font-semibold text-blue-400 break-all"></h2>
+                <button id="modalCloseButton" class="text-gray-400 hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="modalCommandDetails">
+                <p class="mb-2 text-sm text-gray-300"><strong class="text-gray-100">Description:</strong> <span id="modalDescription">N/A</span></p>
+                <p class="mb-4 text-sm text-gray-300"><strong class="text-gray-100">Scenario:</strong> <span id="modalScenario">N/A</span></p>
+                <div id="modalExampleContainer" class="hidden">
+                    <p class="text-gray-100 font-semibold mb-1 text-sm">Example:</p>
+                    <pre class="rounded p-3 mb-2 text-sm"><code id="modalExampleCode"></code></pre>
+                    <button id="modalCopyExampleBtn" class="copy-btn copy-btn-text text-xs py-1 px-3 inline-flex items-center">
+                        Copy Example
+                    </button>
+                </div>
+                <p id="modalNoExample" class="text-gray-400 text-sm hidden">No example available for this command.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Define SVG icons
+        const SVG_COPY_ICON = `
+            <svg viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+            </svg>`;
+        const SVG_DETAILS_ICON = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            </svg>`;
+
+
+        // Define the original cheat sheet data for Git, Docker, Bash
+        const originalCheatSheetData = {
+            git: {
+                title: "Git",
+                categories: [
+                    {
+                        name: "Setup & Configuration",
+                        entries: [
+                            { command: "git config --global user.name \"[name]\"", description: "Set your username globally for all repositories.", example: "git config --global user.name \"Your Name\"", scenario: "First-time Git setup on a new machine." },
+                            { command: "git config --global user.email \"[email]\"", description: "Set your email globally for all repositories.", example: "git config --global user.email \"youremail@example.com\"", scenario: "First-time Git setup on a new machine." },
+                            { command: "git config --global core.editor \"[editor]\"", description: "Set your default text editor.", example: "git config --global core.editor \"vim\"", scenario: "Customizing the editor Git uses for commit messages." },
+                            { command: "git config --list", description: "List all Git configurations.", example: "git config --list", scenario: "Verifying current Git settings." },
+                            { command: "git help [command]", description: "Get help for a specific Git command.", example: "git help commit", scenario: "Understanding options for a command." },
+                        ]
+                    },
+                    {
+                        name: "Starting a Repository",
+                        entries: [
+                            { command: "git init [project-name]", description: "Initialize a new local Git repository.", example: "git init my-new-project", scenario: "Starting a new project from scratch." },
+                            { command: "git clone [url]", description: "Clone an existing repository from a URL.", example: "git clone https://github.com/user/repository.git", scenario: "Getting a copy of an existing remote project." },
+                        ]
+                    },
+                    {
+                        name: "Making Changes (Staging & Committing)",
+                        entries: [
+                            { command: "git status", description: "Show the working tree status (modified files, staged files).", example: "git status", scenario: "Checking what changes are ready to be committed." },
+                            { command: "git add [file]", description: "Add file contents to the staging area (index).", example: "git add index.html", scenario: "Preparing a specific file for commit." },
+                            { command: "git add .", description: "Add all new and modified files in the current directory to the staging area.", example: "git add .", scenario: "Staging all changes in the project." },
+                            { command: "git add -p", description: "Interactively stage parts of changed files.", example: "git add -p", scenario: "Staging only specific hunks of changes within files." },
+                            { command: "git reset [file]", description: "Unstage a file, but keep the changes in the working directory.", example: "git reset README.md", scenario: "Removing a file from the staging area before committing." },
+                            { command: "git commit -m \"[message]\"", description: "Record changes to the repository with a descriptive message.", example: "git commit -m \"Add initial project structure\"", scenario: "Saving your staged changes." },
+                            { command: "git commit -am \"[message]\"", description: "Stage all tracked files and commit them.", example: "git commit -am \"Fix typo in documentation\"", scenario: "Quickly committing changes to already tracked files." },
+                            { command: "git commit --amend", description: "Modify the last commit.", example: "git commit --amend -m \"A better commit message\"", scenario: "Correcting the last commit message or adding forgotten changes." },
+                            { command: "git diff", description: "Show changes between working directory and staging area.", example: "git diff", scenario: "Reviewing unstaged changes." },
+                            { command: "git diff --staged", description: "Show changes between staging area and the last commit.", example: "git diff --staged", scenario: "Reviewing staged changes before committing." },
+                            { command: "git diff [commit1] [commit2]", description: "Show changes between two commits.", example: "git diff HEAD~2 HEAD", scenario: "Comparing different points in history." },
+                        ]
+                    },
+                     {
+                        name: "Branching & Merging",
+                        entries: [
+                            { command: "git branch", description: "List all local branches. Current branch is marked with *.", example: "git branch", scenario: "Seeing available branches." },
+                            { command: "git branch [branch-name]", description: "Create a new branch.", example: "git branch feature-x", scenario: "Starting work on a new feature in isolation." },
+                            { command: "git checkout [branch-name]", description: "Switch to an existing branch.", example: "git checkout develop", scenario: "Changing your working context to a different branch." },
+                            { command: "git checkout -b [branch-name]", description: "Create a new branch and switch to it.", example: "git checkout -b hotfix-123", scenario: "Creating and starting work on a new branch simultaneously." },
+                            { command: "git merge [branch-name]", description: "Merge the specified branch’s history into the current branch.", example: "git merge feature-x", scenario: "Integrating changes from one branch into another (e.g., feature into develop)." },
+                            { command: "git merge --no-ff [branch-name]", description: "Merge, creating a merge commit even if it was a fast-forward.", example: "git merge --no-ff feature-branch", scenario: "Keeping a record of a feature branch merge in history." },
+                            { command: "git branch -d [branch-name]", description: "Delete a local branch (if merged).", example: "git branch -d feature-x", scenario: "Cleaning up a feature branch after it has been merged." },
+                            { command: "git branch -D [branch-name]", description: "Force delete a local branch (even if not merged).", example: "git branch -D old-feature", scenario: "Removing an unneeded branch with unmerged changes." },
+                            { command: "git branch -m [old-name] [new-name]", description: "Rename a local branch.", example: "git branch -m feature-typo feature-correct", scenario: "Correcting a branch name." },
+                        ]
+                    },
+                    {
+                        name: "Rebasing & History Manipulation",
+                        entries: [
+                            { command: "git rebase [base-branch]", description: "Reapply commits from current branch onto base-branch.", example: "git rebase main", scenario: "Updating a feature branch with the latest changes from main, creating a linear history." },
+                            { command: "git rebase -i [commit-ref]", description: "Interactively rebase commits.", example: "git rebase -i HEAD~3", scenario: "Squashing, reordering, or editing recent commits before sharing." },
+                            { command: "git cherry-pick [commit-hash]", description: "Apply the changes introduced by an existing commit.", example: "git cherry-pick abc123xyz", scenario: "Picking a specific commit from one branch and applying it to another." },
+                        ]
+                    },
+                    {
+                        name: "Remote Repositories",
+                        entries: [
+                            { command: "git remote -v", description: "List all configured remote repositories.", example: "git remote -v", scenario: "Checking where your local repository is connected." },
+                            { command: "git remote add [name] [url]", description: "Add a new remote repository.", example: "git remote add origin https://github.com/user/repo.git", scenario: "Connecting your local repository to a remote server." },
+                            { command: "git remote show [remote-name]", description: "Show information about a remote.", example: "git remote show origin", scenario: "Getting details about a remote, including tracked branches." },
+                            { command: "git fetch [remote-name]", description: "Download objects and refs from a remote repository.", example: "git fetch origin", scenario: "Updating your local copy with changes from the remote, without merging." },
+                            { command: "git pull [remote-name] [branch-name]", description: "Fetch from and integrate with another repository or a local branch.", example: "git pull origin main", scenario: "Updating your local branch with changes from the remote and merging them." },
+                            { command: "git push [remote-name] [branch-name]", description: "Update remote refs along with associated objects.", example: "git push origin main", scenario: "Sharing your local commits with the remote repository." },
+                            { command: "git push -u [remote-name] [branch-name]", description: "Push and set upstream tracking for the branch.", example: "git push -u origin feature-branch", scenario: "Pushing a new local branch to remote for the first time and setting it to track." },
+                            { command: "git push [remote-name] --delete [branch-name]", description: "Delete a remote branch.", example: "git push origin --delete old-feature", scenario: "Removing a branch from the remote repository." },
+                            { command: "git push [remote-name] --tags", description: "Push all local tags to the remote repository.", example: "git push origin --tags", scenario: "Sharing tags with others." },
+                            { command: "git branch -r", description: "List remote-tracking branches.", example: "git branch -r", scenario: "Seeing all branches that exist on remotes." },
+                            { command: "git checkout -t [remote-name]/[branch-name]", description: "Create and checkout a local branch tracking a remote branch.", example: "git checkout -t origin/develop", scenario: "Starting to work on an existing remote branch locally." },
+                        ]
+                    },
+                    {
+                        name: "Stashing",
+                        entries: [
+                            { command: "git stash", description: "Temporarily shelve (or stash) changes you've made to your working copy.", example: "git stash", scenario: "Need to switch branches but have uncommitted work." },
+                            { command: "git stash save \"[message]\"", description: "Stash changes with a descriptive message.", example: "git stash save \"WIP on new login form\"", scenario: "Stashing changes with context." },
+                            { command: "git stash list", description: "List all stashed changesets.", example: "git stash list", scenario: "Viewing your saved stashes." },
+                            { command: "git stash pop", description: "Reapply the latest stash and remove it from the stash list.", example: "git stash pop", scenario: "Restoring recently stashed work." },
+                            { command: "git stash apply [stash_id]", description: "Reapply a specific stash but keep it in the stash list.", example: "git stash apply stash@{1}", scenario: "Applying an older stash without removing it." },
+                            { command: "git stash drop [stash_id]", description: "Remove a specific stash from the stash list.", example: "git stash drop stash@{2}", scenario: "Deleting an unneeded stash." },
+                        ]
+                    },
+                    {
+                        name: "Undoing Changes",
+                        entries: [
+                            { command: "git checkout -- [file]", description: "Discard changes in the working directory for a specific file.", example: "git checkout -- config.js", scenario: "Reverting a file to its last committed state." },
+                            { command: "git reset HEAD [file]", description: "Unstage a file (same as git reset [file]).", example: "git reset HEAD index.html", scenario: "Removing a file from the staging area." },
+                            { command: "git revert [commit-hash]", description: "Create a new commit that undoes the changes of a specified commit.", example: "git revert abc123xyz", scenario: "Safely undoing a previous commit that has already been shared." },
+                            { command: "git reset --soft HEAD~1", description: "Move HEAD back one commit, keeping changes staged.", example: "git reset --soft HEAD~1", scenario: "Undoing last commit but keeping changes to re-commit differently." },
+                            { command: "git reset --hard [commit-hash]", description: "Reset current HEAD to the specified commit and discard all changes since then. Use with caution!", example: "git reset --hard HEAD~1", scenario: "Completely removing the last commit and its changes (if not pushed)." },
+                            { command: "git clean -fd", description: "Remove untracked files and directories from the working directory. Use with extreme caution!", example: "git clean -fd", scenario: "Cleaning up the working directory from untracked files/folders." },
+                            { command: "git clean -nfd", description: "Show what would be removed by git clean -fd without actually removing.", example: "git clean -nfd", scenario: "Dry run for cleaning untracked files/folders." },
+                        ]
+                    },
+                    {
+                        name: "History & Logging",
+                        entries: [
+                            { command: "git log", description: "Show commit logs.", example: "git log", scenario: "Viewing the project history." },
+                            { command: "git log --oneline", description: "Show commit logs in a compact, one-line format.", example: "git log --oneline", scenario: "Getting a quick overview of recent commits." },
+                            { command: "git log --graph --oneline --decorate --all", description: "Display the commit history as a graph with branches and tags.", example: "git log --graph --oneline --decorate --all", scenario: "Visualizing branch history." },
+                            { command: "git log -p [file]", description: "Show changes over time for a specific file.", example: "git log -p style.css", scenario: "Tracking how a file has evolved." },
+                            { command: "git log --author=\"[name]\"", description: "Show commits by a specific author.", example: "git log --author=\"John Doe\"", scenario: "Finding commits made by a particular person." },
+                            { command: "git log --grep=\"[pattern]\"", description: "Show commits with messages matching a pattern.", example: "git log --grep=\"fix typo\"", scenario: "Searching commit messages." },
+                            { command: "git blame [file]", description: "Show who changed what and when in a file, line by line.", example: "git blame script.js", scenario: "Finding out who last modified a specific line of code." },
+                            { command: "git shortlog -sn", description: "Summarize git log output by author.", example: "git shortlog -sn --all", scenario: "Seeing contribution counts by author." },
+                        ]
+                    },
+                    {
+                        name: "Tagging",
+                        entries: [
+                            { command: "git tag", description: "List all tags.", example: "git tag", scenario: "Viewing existing release points." },
+                            { command: "git tag -a [tag-name] -m \"[message]\"", description: "Create an annotated tag.", example: "git tag -a v1.0 -m \"Version 1.0 release\"", scenario: "Marking a significant point in history, like a release." },
+                            { command: "git tag [tag-name]", description: "Create a lightweight tag.", example: "git tag v1.0-lw", scenario: "Creating a private or temporary tag." },
+                            { command: "git show [tag-name]", description: "Show information about a tag.", example: "git show v1.0", scenario: "Viewing details of a specific tag." },
+                            { command: "git tag -d [tag-name]", description: "Delete a local tag.", example: "git tag -d v1.0-alpha", scenario: "Removing a local tag." },
+                            { command: "git push [remote-name] --delete tag [tag-name]", description: "Delete a remote tag.", example: "git push origin --delete tag v1.0-alpha", scenario: "Removing a tag from the remote repository." },
+                        ]
+                    }
+                ]
+            },
+            docker: {
+                title: "Docker",
+                categories: [
+                    {
+                        name: "Image Management",
+                        entries: [
+                            { command: "docker images", description: "List all local images.", example: "docker images", scenario: "Checking available Docker images on your system." },
+                            { command: "docker pull [image_name]:[tag]", description: "Download an image from a registry (e.g., Docker Hub).", example: "docker pull ubuntu:latest", scenario: "Getting a new Docker image." },
+                            { command: "docker rmi [image_id_or_name]", description: "Remove one or more local images.", example: "docker rmi my-custom-app:1.0", scenario: "Cleaning up unused images." },
+                            { command: "docker build -t [image_name]:[tag] [path_to_dockerfile]", description: "Build an image from a Dockerfile.", example: "docker build -t myapp:v1 .", scenario: "Creating a custom Docker image for your application." },
+                            { command: "docker history [image_name]", description: "Show the history of an image.", example: "docker history nginx", scenario: "Inspecting the layers of an image." },
+                            { command: "docker image inspect [image_name_or_id]", description: "Display detailed information on one or more images.", example: "docker image inspect ubuntu:latest", scenario: "Getting low-level information about an image." },
+                            { command: "docker tag [source_image]:[tag] [target_image]:[tag]", description: "Tag an image.", example: "docker tag myapp:latest myusername/myapp:v1.0", scenario: "Preparing an image for pushing to a registry or versioning." },
+                            { command: "docker login [registry_url]", description: "Log in to a Docker registry.", example: "docker login docker.io", scenario: "Authenticating to push/pull private images." },
+                            { command: "docker push [image_name]:[tag]", description: "Push an image or a repository to a registry.", example: "docker push myusername/myapp:v1.0", scenario: "Sharing your custom image." },
+                        ]
+                    },
+                    {
+                        name: "Container Management",
+                        entries: [
+                            { command: "docker ps", description: "List running containers.", example: "docker ps", scenario: "Checking active containers." },
+                            { command: "docker ps -a", description: "List all containers (running and stopped).", example: "docker ps -a", scenario: "Viewing all containers, including those that have exited." },
+                            { command: "docker run [options] [image_name] [command]", description: "Create and start a new container from an image.", example: "docker run -d -p 8080:80 --name web_server nginx", scenario: "Running an application inside a Docker container." },
+                            { command: "docker start [container_id_or_name]", description: "Start one or more stopped containers.", example: "docker start my_web_server", scenario: "Restarting a previously stopped container." },
+                            { command: "docker stop [container_id_or_name]", description: "Stop one or more running containers.", example: "docker stop my_web_server", scenario: "Gracefully stopping a container." },
+                            { command: "docker restart [container_id_or_name]", description: "Restart one or more containers.", example: "docker restart my_app_instance", scenario: "Quickly restarting a container." },
+                            { command: "docker rm [container_id_or_name]", description: "Remove one or more containers.", example: "docker rm old_container", scenario: "Cleaning up stopped containers." },
+                            { command: "docker rm $(docker ps -aq)", description: "Remove all stopped containers.", example: "docker rm $(docker ps -aq)", scenario: "Bulk cleaning of stopped containers." },
+                            { command: "docker logs [container_id_or_name]", description: "Fetch the logs of a container.", example: "docker logs -f my_app_instance", scenario: "Debugging or monitoring a containerized application (with -f for follow)." },
+                            { command: "docker exec -it [container_id_or_name] [command]", description: "Run a command in a running container.", example: "docker exec -it my_db_container bash", scenario: "Accessing a shell or running a utility inside a container." },
+                            { command: "docker cp [src_path] [container_id]:[dest_path]", description: "Copy files/folders between a container and the local filesystem.", example: "docker cp ./app.conf my_container:/etc/app.conf", scenario: "Transferring configuration or data files." },
+                            { command: "docker inspect [container_id_or_name]", description: "Display detailed information on one or more containers.", example: "docker inspect my_web_server", scenario: "Getting low-level information about a container, including IP address." },
+                        ]
+                    },
+                    {
+                        name: "Docker Compose",
+                        entries: [
+                            { command: "docker-compose up", description: "Build, (re)create, start, and attach to containers for a service.", example: "docker-compose up -d --build", scenario: "Starting a multi-container application, ensuring images are rebuilt and running in detached mode." },
+                            { command: "docker-compose down", description: "Stop and remove containers, networks, images, and volumes.", example: "docker-compose down -v --rmi all", scenario: "Completely tearing down a multi-container application, including volumes and images." },
+                            { command: "docker-compose ps", description: "List containers for a Compose project.", example: "docker-compose ps", scenario: "Checking the status of services in a Compose application." },
+                            { command: "docker-compose logs [service_name]", description: "View output from containers.", example: "docker-compose logs -f web_server", scenario: "Debugging or monitoring a specific service in a Compose application (with -f for follow)." },
+                            { command: "docker-compose build [service_name]", description: "Build or rebuild services.", example: "docker-compose build api", scenario: "Rebuilding an image for a service after code changes." },
+                            { command: "docker-compose exec [service_name] [command]", description: "Execute a command in a running container of a service.", example: "docker-compose exec db psql -U user -d database", scenario: "Running a command inside a service managed by Compose." },
+                            { command: "docker-compose config", description: "Validate and view the Compose file.", example: "docker-compose -f docker-compose.prod.yml config", scenario: "Checking the syntax and effective configuration of a Compose file." },
+                        ]
+                    },
+                    {
+                        name: "Networking",
+                        entries: [
+                            { command: "docker network ls", description: "List networks.", example: "docker network ls", scenario: "Viewing available Docker networks." },
+                            { command: "docker network create [network_name]", description: "Create a new network.", example: "docker network create --driver bridge my_app_net", scenario: "Setting up a custom bridge network for containers to communicate." },
+                            { command: "docker network inspect [network_name]", description: "Display detailed information on one or more networks.", example: "docker network inspect bridge", scenario: "Understanding the configuration of a network." },
+                            { command: "docker network connect [network_name] [container_name]", description: "Connect a container to a network.", example: "docker network connect my_app_net existing_container", scenario: "Adding an existing container to a specific network." },
+                            { command: "docker network disconnect [network_name] [container_name]", description: "Disconnect a container from a network.", example: "docker network disconnect my_app_net old_container", scenario: "Removing a container from a network." },
+                        ]
+                    },
+                    {
+                        name: "Volumes",
+                        entries: [
+                            { command: "docker volume ls", description: "List volumes.", example: "docker volume ls", scenario: "Checking all Docker volumes." },
+                            { command: "docker volume create [volume_name]", description: "Create a volume.", example: "docker volume create my_db_data", scenario: "Creating a named volume for persistent data storage." },
+                            { command: "docker volume inspect [volume_name]", description: "Display detailed information on one or more volumes.", example: "docker volume inspect my_db_data", scenario: "Getting details about a volume, like its mountpoint." },
+                            { command: "docker volume rm [volume_name]", description: "Remove one or more volumes.", example: "docker volume rm old_data_volume", scenario: "Deleting unused volumes." },
+                            { command: "docker volume prune", description: "Remove all unused local volumes.", example: "docker volume prune -f", scenario: "Cleaning up unused volumes to free disk space (with -f to force)." },
+                        ]
+                    }
+                ]
+            },
+            bash: {
+                title: "Bash",
+                categories: [
+                    {
+                        name: "File & Directory Management",
+                        entries: [
+                            { command: "ls -lha", description: "List directory contents with details, hidden files, and human-readable sizes.", example: "ls -lha /var/log", scenario: "Comprehensive view of files and directories." },
+                            { command: "cd [directory]", description: "Change the current directory.", example: "cd /var/log", scenario: "Navigating the file system." },
+                            { command: "cd -", description: "Change to the previous working directory.", example: "cd -", scenario: "Quickly toggling between two directories." },
+                            { command: "pwd", description: "Print name of current/working directory.", example: "pwd", scenario: "Finding out your current location in the file system." },
+                            { command: "mkdir [directory_name]", description: "Create a new directory.", example: "mkdir new_project", scenario: "Making a new folder." },
+                            { command: "mkdir -p /path/to/nested/dir", description: "Create parent directories as needed.", example: "mkdir -p project/src/components", scenario: "Creating a nested directory structure in one go." },
+                            { command: "rm [file_name]", description: "Remove files.", example: "rm temp.txt", scenario: "Deleting a file." },
+                            { command: "rm -r [directory_name]", description: "Remove directories and their contents recursively.", example: "rm -r old_project", scenario: "Deleting a folder and everything in it." },
+                            { command: "rm -rf [target]", description: "Force remove files/directories without prompting. Use with extreme caution!", example: "rm -rf /tmp/obsolete_stuff", scenario: "Forcefully deleting items." },
+                            { command: "cp [source] [destination]", description: "Copy files and directories.", example: "cp main.py backup/main_backup.py", scenario: "Making a copy of a file." },
+                            { command: "cp -r [source_dir] [dest_dir]", description: "Copy directories recursively.", example: "cp -r project_v1 project_v2", scenario: "Duplicating an entire directory." },
+                            { command: "mv [source] [destination]", description: "Move (rename) files and directories.", example: "mv report.docx final_report.docx", scenario: "Renaming a file or moving it to a different location." },
+                            { command: "touch [file_name]", description: "Create an empty file or update timestamp of existing file.", example: "touch new_script.sh", scenario: "Quickly creating a new file or updating modification time." },
+                            { command: "find [path] -name \"[pattern]\"", description: "Search for files in a directory hierarchy by name.", example: "find . -name \"*.log\"", scenario: "Locating files matching a certain pattern." },
+                            { command: "find [path] -type f -mtime -[days]", description: "Find files modified within the last N days.", example: "find /var/log -type f -mtime -7", scenario: "Finding recently modified files." },
+                            { command: "find [path] -type d -empty -delete", description: "Find and delete empty directories.", example: "find . -type d -empty -delete", scenario: "Cleaning up empty folders." },
+                            { command: "ln -s [target_file] [link_name]", description: "Create a symbolic (soft) link.", example: "ln -s /opt/app/config.ini ./app_config.ini", scenario: "Creating a shortcut to a file or directory." },
+                        ]
+                    },
+                    {
+                        name: "Text Processing",
+                        entries: [
+                            { command: "cat [file]", description: "Concatenate files and print on the standard output.", example: "cat error.log", scenario: "Displaying the content of a file." },
+                            { command: "less [file]", description: "View file content page by page.", example: "less /var/log/syslog", scenario: "Interactively viewing large files." },
+                            { command: "grep \"[pattern]\" [file]", description: "Print lines matching a pattern.", example: "grep -i \"error\" server.log", scenario: "Searching for specific text within a file (case-insensitive with -i)." },
+                            { command: "grep -r \"[pattern]\" [directory]", description: "Recursively search for pattern in files within a directory.", example: "grep -r \"TODO:\" ./src", scenario: "Finding a pattern across multiple files in a project." },
+                            { command: "head [file]", description: "Output the first part of files.", example: "head -n 20 access.log", scenario: "Viewing the beginning of a large file." },
+                            { command: "tail [file]", description: "Output the last part of files.", example: "tail -f app.log", scenario: "Monitoring log files in real-time." },
+                            { command: "wc [file]", description: "Print newline, word, and byte counts for each file.", example: "wc -l data.txt", scenario: "Counting lines, words, or characters in a file." },
+                            { command: "sort [file]", description: "Sort lines of text files.", example: "sort names.txt", scenario: "Ordering data alphabetically or numerically." },
+                            { command: "uniq [file]", description: "Report or omit repeated lines (requires sorted input).", example: "sort data.txt | uniq -c", scenario: "Counting occurrences of unique lines." },
+                            { command: "cut -d'[delimiter]' -f[fields] [file]", description: "Remove sections from each line of files.", example: "cut -d',' -f1,3 data.csv", scenario: "Extracting specific columns from delimited data." },
+                            { command: "tr '[set1]' '[set2]'", description: "Translate or delete characters.", example: "cat text.txt | tr 'a-z' 'A-Z'", scenario: "Converting text to uppercase/lowercase, or replacing characters." },
+                        ]
+                    },
+                    {
+                        name: "Permissions",
+                        entries: [
+                            { command: "chmod [permissions] [file]", description: "Change file mode bits (e.g., 755, u+x).", example: "chmod 755 script.sh", scenario: "Making a script executable or changing access permissions." },
+                            { command: "chown [user]:[group] [file]", description: "Change file owner and group.", example: "chown www-data:www-data index.html", scenario: "Setting the correct ownership for web server files." },
+                        ]
+                    },
+                     {
+                        name: "Process Management & Job Control",
+                        entries: [
+                            { command: "ps aux", description: "Report a snapshot of the current processes.", example: "ps aux | grep python", scenario: "Listing running processes, often filtered with grep." },
+                            { command: "top", description: "Display Linux processes in real-time.", example: "top", scenario: "Monitoring system resource usage and running processes interactively." },
+                            { command: "htop", description: "Interactive process viewer (often more user-friendly than top).", example: "htop", scenario: "An enhanced alternative to top for process monitoring." },
+                            { command: "kill [pid]", description: "Send a signal to a process (default is TERM).", example: "kill 12345", scenario: "Terminating a misbehaving process." },
+                            { command: "kill -9 [pid]", description: "Forcefully kill a process (SIGKILL).", example: "kill -9 12345", scenario: "Forcibly stopping a non-responsive process." },
+                            { command: "killall [process_name]", description: "Kill processes by name.", example: "killall firefox", scenario: "Stopping all instances of a particular program." },
+                            { command: "jobs", description: "List active jobs (background processes).", example: "jobs", scenario: "Checking processes running in the background of the current shell." },
+                            { command: "bg %[job_id]", description: "Put a stopped job in the background.", example: "bg %1", scenario: "Resuming a stopped process in the background." },
+                            { command: "fg %[job_id]", description: "Bring a job to the foreground.", example: "fg %1", scenario: "Bringing a background process to the foreground to interact with it." },
+                            { command: "[command] &", description: "Run a command in the background.", example: "sleep 300 &", scenario: "Starting a long-running task without blocking the terminal." },
+                            { command: "Ctrl+Z", description: "Suspend (stop) the current foreground process.", example: "(Press Ctrl+Z while a command is running)", scenario: "Pausing a running command to do something else." },
+                            { command: "nohup [command] &", description: "Run a command immune to hangups, with output to nohup.out.", example: "nohup ./my_server.sh &", scenario: "Running a command that should continue after you log out." },
+                        ]
+                    },
+                    {
+                        name: "Shell Control & Variables",
+                        entries: [
+                            { command: "export VARNAME=\"value\"", description: "Set an environment variable.", example: "export API_KEY=\"your_api_key_here\"", scenario: "Making a variable available to child processes." },
+                            { command: "echo $VARNAME", description: "Display the value of a variable.", example: "echo $PATH", scenario: "Checking the value of an environment variable." },
+                            { command: "unset VARNAME", description: "Remove an environment variable.", example: "unset TEMP_VAR", scenario: "Deleting a variable from the environment." },
+                            { command: "[command1] | [command2]", description: "Pipe the output of command1 to the input of command2.", example: "ls -l | grep .txt", scenario: "Combining commands to perform complex tasks." },
+                            { command: "[command] > [file]", description: "Redirect standard output to a file, overwriting the file.", example: "date > current_date.txt", scenario: "Saving the output of a command to a file." },
+                            { command: "[command] >> [file]", description: "Redirect standard output to a file, appending to the file.", example: "echo \"New log entry\" >> app.log", scenario: "Adding command output to the end of an existing file." },
+                            { command: "[command] 2> [error_file]", description: "Redirect standard error to a file.", example: "./run_script.sh 2> error.log", scenario: "Capturing error messages separately." },
+                            { command: "[command] &> [output_file]", description: "Redirect both standard output and standard error to a file.", example: "./backup.sh &> backup.log", scenario: "Logging all output of a script." },
+                            { command: "history", description: "Display command history.", example: "history | tail -n 20", scenario: "Viewing recently executed commands." },
+                            { command: "!!", description: "Execute the last command.", example: "!!", scenario: "Quickly re-running the previous command (e.g., after a sudo error)." },
+                            { command: "!N", description: "Execute the Nth command from history.", example: "!101", scenario: "Re-running a specific command from history." },
+                            { command: "Ctrl+R", description: "Reverse search command history.", example: "(Press Ctrl+R, then type part of command)", scenario: "Finding and re-running a previous command interactively." },
+                        ]
+                    },
+                    {
+                        name: "Networking & System Info",
+                        entries: [
+                            { command: "ping [host]", description: "Send ICMP ECHO_REQUEST packets to network hosts.", example: "ping google.com", scenario: "Checking network connectivity to a host." },
+                            { command: "ifconfig / ip addr", description: "Display or configure network interface parameters.", example: "ip addr show", scenario: "Viewing IP addresses and network interface details." },
+                            { command: "netstat -tulnp", description: "Show network connections, listening ports, and PIDs.", example: "netstat -tulnp | grep LISTEN", scenario: "Finding out which services are listening on which ports." },
+                            { command: "ssh [user]@[host]", description: "OpenSSH SSH client (remote login program).", example: "ssh myuser@remote.server.com", scenario: "Connecting to a remote server securely." },
+                            { command: "scp [source] [destination]", description: "Secure copy (remote file copy program).", example: "scp localfile.txt user@remote:/home/user/", scenario: "Copying files to or from a remote server over SSH." },
+                            { command: "wget [URL]", description: "Non-interactive network downloader.", example: "wget https://example.com/file.zip", scenario: "Downloading files from the internet via command line." },
+                            { command: "curl [URL]", description: "Transfer data from or to a server (supports many protocols).", example: "curl -O https://example.com/data.json", scenario: "Downloading files, testing APIs." },
+                            { command: "df -h", description: "Report file system disk space usage (human-readable).", example: "df -h", scenario: "Checking available disk space on mounted filesystems." },
+                            { command: "du -sh [directory]", description: "Estimate file space usage (summary, human-readable).", example: "du -sh /var/log", scenario: "Checking the size of a directory." },
+                            { command: "uname -a", description: "Print all system information.", example: "uname -a", scenario: "Getting kernel version and other system details." },
+                            { command: "free -h", description: "Display amount of free and used memory in the system (human-readable).", example: "free -h", scenario: "Checking memory usage." },
+                        ]
+                    },
+                    {
+                        name: "Archiving & Compression",
+                        entries: [
+                            { command: "tar -czvf [archive.tar.gz] [directory_to_archive]", description: "Create a gzipped tar archive.", example: "tar -czvf project_backup.tar.gz ./my_project", scenario: "Backing up or bundling a directory." },
+                            { command: "tar -xzvf [archive.tar.gz]", description: "Extract a gzipped tar archive.", example: "tar -xzvf project_backup.tar.gz", scenario: "Unpacking an archive." },
+                            { command: "tar -cjvf [archive.tar.bz2] [directory]", description: "Create a bzip2 compressed tar archive.", example: "tar -cjvf logs.tar.bz2 /var/log/", scenario: "Creating a highly compressed archive." },
+                            { command: "tar -xjvf [archive.tar.bz2]", description: "Extract a bzip2 compressed tar archive.", example: "tar -xjvf logs.tar.bz2 -C /tmp/extracted_logs", scenario: "Extracting bzip2 archives to a specific directory." },
+                            { command: "zip -r [archive.zip] [directory]", description: "Create a zip archive.", example: "zip -r documents.zip ./MyDocuments", scenario: "Creating a standard zip file." },
+                            { command: "unzip [archive.zip]", description: "Extract files from a zip archive.", example: "unzip documents.zip -d ./extracted_docs", scenario: "Unzipping files." },
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const tabsContainer = document.getElementById('tabsContainer');
+        const contentContainer = document.getElementById('contentContainer');
+        const searchInput = document.getElementById('searchInput');
+        const copyMessage = document.getElementById('copyMessage');
+
+        // Modal elements
+        const modal = document.getElementById('commandDetailModal');
+        const modalCommandText = document.getElementById('modalCommandText');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalScenario = document.getElementById('modalScenario');
+        const modalExampleContainer = document.getElementById('modalExampleContainer');
+        const modalExampleCode = document.getElementById('modalExampleCode');
+        const modalCopyExampleBtn = document.getElementById('modalCopyExampleBtn');
+        const modalNoExample = document.getElementById('modalNoExample');
+        const modalCloseButton = document.getElementById('modalCloseButton');
+
+        // Prepare "All Commands" data with full details
+        const allCommandsDataForTab = [];
+        Object.keys(originalCheatSheetData).forEach(toolKey => {
+            const tool = originalCheatSheetData[toolKey];
+            tool.categories.forEach(category => {
+                category.entries.forEach(originalEntry => {
+                    if (originalEntry.command) {
+                        allCommandsDataForTab.push({ ...originalEntry }); // Push a copy of the original entry
+                    }
+                });
+            });
+        });
+
+        // Create the final cheatSheetData object with "All Commands" as the first entry
+        const cheatSheetData = {
+            allCommands: {
+                title: "All Commands",
+                categories: [{ name: "All Available Commands", entries: allCommandsDataForTab }]
+            },
+            ...originalCheatSheetData
+        };
+
+        let activeTabKey = Object.keys(cheatSheetData)[0]; // Default to the first tab ("All Commands")
+
+        function showMessage(message) {
+            copyMessage.textContent = message;
+            copyMessage.classList.add('show');
+            setTimeout(() => {
+                copyMessage.classList.remove('show');
+            }, 2000);
+        }
+
+        function copyToClipboard(text, btn) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            textArea.style.top = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showMessage('Copied!');
+                 if(btn) {
+                    const originalContent = btn.innerHTML;
+                    const originalClasses = btn.className;
+                    btn.innerHTML = 'Copied!';
+                    btn.className += ' copied'; // Add copied class
+                    setTimeout(() => {
+                        btn.innerHTML = originalContent;
+                        btn.className = originalClasses; // Restore original classes
+                    }, 1500);
+                }
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                showMessage('Failed to copy.');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function colorCodeCommand(commandStr) {
+            if (!commandStr) return '';
+            const placeholderRegex = /(\[[a-zA-Z0-9\-_:]+\])/g;
+            const stringRegex = /(".*?"|'.*?')/g;
+            const tokens = commandStr.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
+            let firstWord = true;
+
+            const htmlParts = tokens.map(token => {
+                if (firstWord && !token.startsWith('-') && !token.match(placeholderRegex) && !token.match(stringRegex)) {
+                    firstWord = false;
+                    return `<span class="cmd-main">${token}</span>`;
+                }
+                if (token.match(placeholderRegex)) {
+                    return token.replace(placeholderRegex, '<span class="cmd-placeholder">$1</span>');
+                }
+                if (token.startsWith('--') || (token.startsWith('-') && token.length > 1 && !parseFloat(token))) {
+                     const parts = token.split('=');
+                    if (parts.length > 1 && (parts[0].startsWith('--') || parts[0].startsWith('-'))) {
+                        let valuePart = parts.slice(1).join('=');
+                        if (valuePart.match(stringRegex)) {
+                             valuePart = valuePart.replace(stringRegex, '<span class="cmd-string">$1</span>');
+                        } else if (valuePart.match(placeholderRegex)){
+                             valuePart = valuePart.replace(placeholderRegex, '<span class="cmd-placeholder">$1</span>');
+                        } else {
+                             valuePart = `<span class="cmd-token">${valuePart}</span>`;
+                        }
+                        return `<span class="cmd-option">${parts[0]}</span>=<span class="cmd-token">${valuePart}</span>`;
+                    }
+                    return `<span class="cmd-option">${token}</span>`;
+                }
+                if (token.match(stringRegex)) {
+                    return token.replace(stringRegex, '<span class="cmd-string">$1</span>');
+                }
+                return `<span class="cmd-token">${token}</span>`;
+            });
+            return htmlParts.join(' ');
+        }
+
+        function showCommandDetailsModal(entryData) {
+            modalCommandText.textContent = entryData.command || 'Command Details';
+            modalDescription.textContent = entryData.description || 'N/A';
+            modalScenario.textContent = entryData.scenario || 'N/A';
+
+            if (entryData.example) {
+                modalExampleCode.innerHTML = colorCodeCommand(entryData.example);
+                modalExampleContainer.classList.remove('hidden');
+                modalNoExample.classList.add('hidden');
+                // Setup copy button for the example in the modal
+                modalCopyExampleBtn.innerHTML = `${SVG_COPY_ICON} Copy Example`; // Add icon
+                modalCopyExampleBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    copyToClipboard(entryData.example, modalCopyExampleBtn);
+                };
+            } else {
+                modalExampleContainer.classList.add('hidden');
+                modalNoExample.classList.remove('hidden');
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function hideCommandDetailsModal() {
+            modal.classList.add('hidden');
+        }
+
+        // Event listeners for modal
+        modalCloseButton.addEventListener('click', hideCommandDetailsModal);
+        modal.addEventListener('click', (event) => { // Close if overlay is clicked
+            if (event.target === modal) {
+                hideCommandDetailsModal();
+            }
+        });
+
+
+        function renderContent(toolKey) {
+            const toolData = cheatSheetData[toolKey];
+            if (!toolData) return;
+
+            contentContainer.innerHTML = '';
+
+            if (toolKey === 'allCommands') {
+                const allCommandsContainer = document.createElement('div');
+                allCommandsContainer.className = 'all-commands-list-container';
+
+                const commandsCategory = toolData.categories[0];
+                commandsCategory.entries.forEach(entry => { // entry here is the full object
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'all-command-entry';
+                    itemDiv.dataset.searchText = entry.command.toLowerCase();
+
+                    const commandTextEl = document.createElement('span'); // Use span for better text overflow handling
+                    commandTextEl.className = 'command-text';
+                    commandTextEl.textContent = entry.command;
+                    commandTextEl.title = entry.command; // Show full command on hover if truncated
+                    itemDiv.appendChild(commandTextEl);
+
+                    const actionsGroup = document.createElement('div');
+                    actionsGroup.className = 'actions-group';
+
+                    const detailsBtn = document.createElement('button');
+                    detailsBtn.className = 'details-btn';
+                    detailsBtn.innerHTML = SVG_DETAILS_ICON;
+                    detailsBtn.setAttribute('aria-label', `View details for command: ${entry.command}`);
+                    detailsBtn.title = "View details";
+                    detailsBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        showCommandDetailsModal(entry); // Pass the full entry object
+                    };
+                    actionsGroup.appendChild(detailsBtn);
+
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.innerHTML = SVG_COPY_ICON;
+                    copyBtn.setAttribute('aria-label', `Copy command: ${entry.command}`);
+                    copyBtn.title = "Copy command";
+                    copyBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        copyToClipboard(entry.command, copyBtn);
+                    };
+                    actionsGroup.appendChild(copyBtn);
+                    itemDiv.appendChild(actionsGroup);
+                    allCommandsContainer.appendChild(itemDiv);
+                });
+                contentContainer.appendChild(allCommandsContainer);
+
+            } else {
+                // Standard rendering for Git, Docker, Bash, etc.
+                const toolDiv = document.createElement('div');
+                toolDiv.id = `content-${toolKey}`;
+
+                toolData.categories.forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'mb-8 category-wrapper';
+
+                    const categoryTitle = document.createElement('h2');
+                    categoryTitle.className = 'text-2xl font-semibold mb-4 pb-2 border-b category-title';
+                    categoryTitle.textContent = category.name;
+                    categoryDiv.appendChild(categoryTitle);
+
+                    const entriesGridContainer = document.createElement('div');
+                    entriesGridContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
+
+                    category.entries.forEach(entry => {
+                        const entryDiv = document.createElement('div');
+                        entryDiv.className = 'content-entry';
+                        entryDiv.dataset.searchText = `${entry.command || ''} ${entry.description || ''} ${entry.example || ''} ${entry.scenario || ''}`.toLowerCase();
+
+                        if (entry.command) {
+                            const commandTitle = document.createElement('h3');
+                            const codeWrapper = document.createElement('div');
+                            codeWrapper.className = 'command-code-wrapper';
+                            const codeEl = document.createElement('code');
+                            codeEl.textContent = entry.command;
+                            codeWrapper.appendChild(codeEl);
+                            commandTitle.appendChild(codeWrapper);
+
+                            const copyCmdBtn = document.createElement('button');
+                            copyCmdBtn.className = 'copy-btn copy-btn-text'; // Use text button style
+                            copyCmdBtn.innerHTML = 'Copy';
+                            copyCmdBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                copyToClipboard(entry.command, copyCmdBtn);
+                            };
+                            commandTitle.appendChild(copyCmdBtn);
+                            entryDiv.appendChild(commandTitle);
+                        }
+
+                        if (entry.description) {
+                            const descP = document.createElement('p');
+                            descP.className = 'desc-scenario-text';
+                            descP.innerHTML = `<strong>Description:</strong> ${entry.description}`;
+                            entryDiv.appendChild(descP);
+                        }
+                        if (entry.scenario) {
+                            const scenarioP = document.createElement('p');
+                            scenarioP.className = 'desc-scenario-text';
+                            scenarioP.innerHTML = `<strong>Scenario:</strong> ${entry.scenario}`;
+                            entryDiv.appendChild(scenarioP);
+                        }
+
+                        if (entry.example) {
+                            const exampleContainer = document.createElement('div');
+                            exampleContainer.className = 'example-container mt-auto pt-2';
+
+                            const exampleLabelP = document.createElement('p');
+                            exampleLabelP.className = 'example-label';
+                            exampleLabelP.innerHTML = `<strong>Example:</strong>`;
+                            exampleContainer.appendChild(exampleLabelP);
+
+                            const pre = document.createElement('pre');
+                            const code = document.createElement('code');
+                            code.innerHTML = colorCodeCommand(entry.example);
+                            pre.appendChild(code);
+                            exampleContainer.appendChild(pre);
+
+                            const copyExBtn = document.createElement('button');
+                            copyExBtn.className = 'copy-btn'; // Icon only for example copy
+                            copyExBtn.innerHTML = SVG_COPY_ICON;
+                            copyExBtn.setAttribute('aria-label', 'Copy example command');
+                            copyExBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                copyToClipboard(entry.example, copyExBtn);
+                            };
+                            exampleContainer.appendChild(copyExBtn);
+                            entryDiv.appendChild(exampleContainer);
+                        }
+                        entriesGridContainer.appendChild(entryDiv);
+                    });
+                    categoryDiv.appendChild(entriesGridContainer);
+                    toolDiv.appendChild(categoryDiv);
+                });
+                contentContainer.appendChild(toolDiv);
+            }
+        }
+
+
+        function setupTabs() {
+            tabsContainer.innerHTML = '';
+            Object.keys(cheatSheetData).forEach(key => {
+                const button = document.createElement('button');
+                button.className = 'tab-button px-4 py-2 font-medium text-md focus:outline-none';
+                button.textContent = cheatSheetData[key].title;
+                button.dataset.toolKey = key;
+
+                if (key === activeTabKey) {
+                    button.classList.add('active');
+                }
+                button.onclick = () => {
+                    activeTabKey = key;
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderContent(key);
+                    filterContent(searchInput.value.toLowerCase());
+                };
+                tabsContainer.appendChild(button);
+            });
+        }
+
+        function filterContent(searchTerm) {
+            const itemsToFilter = document.querySelectorAll('.content-entry, .all-command-entry');
+
+            itemsToFilter.forEach(item => {
+                const textToSearch = item.dataset.searchText || "";
+                if (textToSearch.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            if (activeTabKey !== 'allCommands') {
+                document.querySelectorAll('.category-wrapper').forEach(categoryDiv => {
+                    const visibleEntries = categoryDiv.querySelectorAll('.content-entry[style*="display: flex"], .content-entry:not([style*="display: none"])');
+                    const categoryTitle = categoryDiv.querySelector('.category-title');
+                    if (visibleEntries.length > 0) {
+                        if (categoryTitle) categoryTitle.style.display = '';
+                        categoryDiv.style.display = '';
+                    } else {
+                        if (categoryTitle) categoryTitle.style.display = 'none';
+                        categoryDiv.style.display = 'none';
+                    }
+                });
+            } else {
+                const allCommandsListContainer = document.querySelector('.all-commands-list-container');
+                if (allCommandsListContainer) {
+                    const visibleItems = allCommandsListContainer.querySelectorAll('.all-command-entry[style*="display: flex"]');
+                    allCommandsListContainer.style.display = visibleItems.length > 0 ? 'grid' : 'none';
+                }
+            }
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            filterContent(e.target.value.toLowerCase());
+        });
+
+        // Initial setup
+        setupTabs();
+        if (activeTabKey && cheatSheetData[activeTabKey]) {
+            renderContent(activeTabKey);
+        }
+        if (!searchInput.value) {
+            filterContent("");
+        }
+
+    </script>
+</body>
+</html>
