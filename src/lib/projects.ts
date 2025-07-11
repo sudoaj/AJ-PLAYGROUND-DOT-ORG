@@ -12,8 +12,6 @@ export interface Project {
   language: string;
   lastUpdated: string;
   url: string;
-  imageUrl: string;
-  imageHint: string;
   featured: boolean;
   status: string;
   technologies: string[];
@@ -53,8 +51,6 @@ export function getAllProjects(): Project[] {
         language: data.language,
         lastUpdated: data.lastUpdated || new Date().toISOString(),
         url: data.url || '#',
-        imageUrl: data.imageUrl || '/placeholder-project.jpg',
-        imageHint: data.imageHint || data.title,
         featured: data.featured || false,
         status: data.status || 'completed',
         technologies: data.technologies || [data.language],
@@ -86,8 +82,6 @@ export function getProjectBySlug(slug: string): ProjectWithContent | null {
       language: data.language,
       lastUpdated: data.lastUpdated || new Date().toISOString(),
       url: data.url || '#',
-      imageUrl: data.imageUrl || '/placeholder-project.jpg',
-      imageHint: data.imageHint || data.title,
       featured: data.featured || false,
       status: data.status || 'completed',
       technologies: data.technologies || [data.language],

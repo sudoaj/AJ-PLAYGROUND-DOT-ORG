@@ -5,8 +5,6 @@ description: "AI-powered job-resume matching tool that analyzes job postings and
 language: "TypeScript"
 lastUpdated: "2025-07-03"
 url: "/playground/position-fit"
-imageUrl: "/images/projects/ai-chatbot.jpg"
-imageHint: "AI job-resume matching interface"
 featured: true
 status: "planned"
 technologies: ["Next.js", "React", "TypeScript", "AI/OpenAI", "Web Scraping", "PDF Parser", "LaTeX Parser"]

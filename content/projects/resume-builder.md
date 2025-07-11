@@ -5,8 +5,6 @@ description: "Building a modern resume builder with AI integration, dynamic skil
 language: "TypeScript"
 lastUpdated: "2025-07-03"
 url: "/playground/resume-builder"
-imageUrl: "/images/projects/ai-chatbot.jpg"
-imageHint: "AI-powered resume builder interface"
 featured: true
 status: "completed"
 technologies: ["Next.js", "React", "TypeScript", "Tailwind CSS", "AI/OpenAI", "PDF Export", "LaTeX"]

@@ -5,8 +5,6 @@ description: "A behind-the-scenes look at the projects section—where ideas bec
 language: "Markdown"
 lastUpdated: "2025-06-09"
 url: "#"
-imageUrl: "/images/projects/ecommerce-platform.jpg"
-imageHint: "Project showcase collage"
 featured: false
 status: "completed"
 technologies: ["Documentation", "Markdown"]
@@ -44,7 +42,7 @@ my-project/
 ```
 
 **Image Preview:**
-![Sample Project Screenshot](/images/projects/data-viz-dashboard.jpg)
+*Sample project screenshots would go here*
 
 **Command to Run:**
 ```zsh

@@ -3,8 +3,6 @@ title: "Welcome to AJ Playground Blog"
 date: "2025-06-09"
 slug: "intro"
 excerpt: "A warm welcome to the AJ Playground Blog—where ideas, projects, and learning come together."
-imageUrl: "/images/blog/why-react-cover.png"
-imageHint: "Welcome illustration"
 ---
 
 Welcome to the AJ Playground Blog!
