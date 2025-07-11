@@ -1,24 +1,14 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Construction } from 'lucide-react';
 import Link from 'next/link';
-import { getAllPlaygroundProjects, getActivePlaygroundProjects } from '@/lib/playground';
+import { getLivePlaygroundProjects } from '@/lib/playground';
 import PlaygroundCard from '@/components/ui/PlaygroundCard';
 
 export default function PlaygroundSection() {
-  const allProjects = getAllPlaygroundProjects();
-  const activeProjects = getActivePlaygroundProjects();
+  // Get only live projects for the homepage (no coming soon or abandoned)
+  const liveProjects = getLivePlaygroundProjects();
   
-  // Prioritize active projects for the homepage preview
-  const displayProjects = activeProjects.slice(0, 4);
-  
-  // If we don't have 4 active projects, fill with other projects
-  if (displayProjects.length < 4) {
-    const remainingProjects = allProjects
-      .filter(project => !activeProjects.includes(project))
-      .slice(0, 4 - displayProjects.length);
-    displayProjects.push(...remainingProjects);
-  }
+  // Show up to 4 live projects
+  const displayProjects = liveProjects.slice(0, 4);
 
   return (
     <section id="playground" className="py-16 md:py-24 bg-background scroll-mt-20">
