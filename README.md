@@ -1,3 +1,4 @@
+
 # AJ-Playground
 
 A dynamic portfolio website and experimental playground showcasing my web development projects, interactive tools, and creative coding experiments.
@@ -15,14 +16,13 @@ AJ-Playground is a Next.js-based personal portfolio and blog site that showcases
 - **Responsive Design**: Fully responsive for all devices and screen sizes
 - **Static Content Management**: File-based content system for easy project and blog management
 
-
 ## Tech Stack
 
 - **Frontend**: Next.js 15 with App Router
 - **Styling**: Tailwind CSS
 - **UI Components**: ShadCN UI
 - **Content**: Markdown with gray-matter
-- **Deployment**: Vercel
+- **Deployment**: Replit
 
 ## Getting Started
 
@@ -78,14 +78,21 @@ src/
 │   ├── api/            # API routes for projects, blog, and playground
 │   ├── blog/           # Blog pages with dynamic routing
 │   ├── playground/     # Interactive playground section
-│   │   └── [slug]/     # Dynamic routes for individual playground projects
+│   │   ├── [slug]/     # Dynamic routes for individual playground projects
+│   │   ├── developer-cheatsheet/  # Developer reference guide
+│   │   ├── retro-games/ # Classic arcade games
+│   │   └── position-fit/ # Resume-job matching tool
 │   ├── projects/       # Project showcase pages
 │   └── resume/         # Resume page
 ├── components/
 │   ├── layout/         # Header, Footer, and layout components
 │   ├── sections/       # Hero, Projects, Blog, and Playground sections
 │   ├── ui/             # Reusable UI components (cards, animations, etc.)
-│   └── TipCalculator.tsx  # Functional tip calculator tool
+│   ├── position-fit/   # Position-fit analyzer components
+│   ├── TipCalculator.tsx      # Functional tip calculator tool
+│   ├── DeveloperCheatsheet.tsx # Developer reference component
+│   ├── RetroGames.tsx  # Retro games collection
+│   └── ResumeBuilder.tsx # Resume building tool
 ├── hooks/              # Custom React hooks
 ├── lib/                # Utility functions and content management
 ├── services/           # API services
@@ -110,10 +117,28 @@ The playground section features a collection of interactive tools and experiment
   - Real-time calculations and visual breakdown
   - Service quality tipping guide
 
+- **🎮 Retro Games**: Classic arcade games recreated with modern web technologies
+  - Snake: Classic snake game with score tracking and responsive controls
+  - Tetris: Full-featured Tetris implementation with line clearing and level progression
+  - Breakout: Paddle and ball game with brick destruction mechanics
+  - Fullscreen mode support for immersive gaming experience
+  - Progressive difficulty and scoring systems
+
+- **📝 Developer Cheatsheet**: Interactive reference guide with searchable syntax and code snippets
+  - Comprehensive coverage for multiple programming languages (JavaScript, Python, TypeScript, React, Node.js, Git, CSS, HTML)
+  - Searchable database of code snippets and syntax examples
+  - Copy-to-clipboard functionality for quick code access
+  - Categorized by language and topic for easy navigation
+  - Real-time search with keyword highlighting
+
+- **📄 Position Fit**: AI-powered resume and job description matching tool
+  - Upload resume and job description for compatibility analysis
+  - Skill gap identification and improvement suggestions
+  - Match score calculation with detailed breakdown
+  - Resume optimization recommendations
+
 #### Coming Soon Projects
 - **🚀 Future OS Concept Visualizer**: Interactive visualization of futuristic operating system concepts
-- **🎮 Retro Games**: Classic arcade games recreated with modern web technologies
-- **📝 Developer Cheatsheet**: Interactive reference guide with searchable syntax and code snippets
 
 Each playground project has its own dedicated page with either functional tools or animated "coming soon" previews with progress indicators and feature hints.
 
@@ -180,9 +205,10 @@ A collection of technical articles about topics like:
 | Project | Status | Features |
 |---------|--------|----------|
 | 💰 Tip Calculator | ✅ Live | Bill splitting, custom tips, service guide |
+| 🎮 Retro Games | ✅ Live | Snake, Tetris, Breakout with fullscreen support |
+| 📝 Developer Cheatsheet | ✅ Live | Multi-language syntax reference, searchable snippets |
+| 📄 Position Fit | ✅ Live | AI resume-job matching, skill gap analysis |
 | 🚀 Future OS Visualizer | 🚧 Coming Soon | Interactive UI concepts, animations |
-| 🎮 Retro Games | 🚧 Coming Soon | Classic arcade games, pixel graphics |
-| 📝 Developer Cheatsheet | 🚧 Coming Soon | Syntax references, code snippets |
 
 ## License
 
@@ -195,4 +221,4 @@ All rights reserved. © AJ-Playground.org
 
 ---
 
-Built with Next.js, Tailwind CSS, and ShadCN UI. Deployed on Vercel.
+Built with Next.js, Tailwind CSS, and ShadCN UI. Deployed on Replit.
