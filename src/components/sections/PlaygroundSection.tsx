@@ -1,14 +1,14 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { getAllPlaygroundProjects } from '@/lib/playground';
+import { getLivePlaygroundProjects } from '@/lib/playground';
 import PlaygroundCard from '@/components/ui/PlaygroundCard';
 
 export default function PlaygroundSection() {
-  // Get all playground projects
-  const allProjects = getAllPlaygroundProjects();
+  // Get only live projects for the homepage (no coming soon or abandoned)
+  const liveProjects = getLivePlaygroundProjects();
   
-  // Show up to 4 projects for homepage preview
-  const displayProjects = allProjects.slice(0, 4);
+  // Show up to 4 live projects
+  const displayProjects = liveProjects.slice(0, 4);
 
   return (
     <section id="playground" className="py-16 md:py-24 bg-background scroll-mt-20">
