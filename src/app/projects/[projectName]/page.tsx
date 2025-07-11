@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, CalendarDays, ExternalLink, Briefcase, Code, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from 'date-fns';
@@ -25,7 +26,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: ProjectPageProps) {
   const { projectName } = await params;
   const project = await getProjectBySlug(projectName);
-  
+
   if (!project) {
     return {
       title: 'Project Not Found | AJ-Playground',
@@ -79,14 +80,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <p className="text-lg text-muted-foreground mb-6">
               {projectData.description}
             </p>
-            
+
             {/* Project Metadata */}
             <div className="space-y-3">
               <div className="flex items-center text-sm text-muted-foreground">
                 <CalendarDays className="mr-2 h-4 w-4" />
                 <span>Last Updated: {formattedDate}</span>
               </div>
-              
+
               {projectData.language && (
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Code className="mr-2 h-4 w-4" />

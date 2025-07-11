@@ -56,6 +56,7 @@ export default function PlaygroundPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   
   const [sortBy, setSortBy] = useState('featured');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -113,7 +114,7 @@ export default function PlaygroundPage() {
     });
 
     setFilteredProjects(filtered);
-  }, [projects, searchTerm, selectedCategory, selectedStatus, selectedDifficulty, sortBy, sortOrder]);
+  }, [projects, searchTerm, selectedCategory, selectedStatus, sortBy, sortOrder]);
 
   const liveProjects = filteredProjects.filter(p => p.isLive && !p.isAbandoned);
   const abandonedProjects = filteredProjects.filter(p => p.isAbandoned);
