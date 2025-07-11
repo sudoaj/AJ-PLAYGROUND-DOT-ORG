@@ -58,13 +58,18 @@ export default function PlaygroundCard({ project, showInteractButton = false, vi
                   )}
                 </div>
               ) : project.isAbandoned ? (
-                <Button disabled size="sm" variant="outline" className="cursor-not-allowed">
-                  No longer available
+                <Button asChild size="sm" variant="outline">
+                  <Link href={`/playground/${project.slug}`}>
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Anyway
+                  </Link>
                 </Button>
               ) : (
-                <Button disabled size="sm" variant="outline" className="cursor-not-allowed">
-                  <Clock className="w-4 h-4 mr-2" />
-                  Coming Soon
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/playground">
+                    <Clock className="w-4 h-4 mr-2" />
+                    Coming Soon
+                  </Link>
                 </Button>
               )}
             </div>
@@ -124,8 +129,11 @@ export default function PlaygroundCard({ project, showInteractButton = false, vi
           ) : project.isAbandoned ? (
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-2">This project has been abandoned</p>
-              <Button disabled size="sm" variant="outline" className="cursor-not-allowed">
-                No longer available
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/playground/${project.slug}`}>
+                  <Eye className="w-4 h-4 mr-2" />
+                  View Anyway
+                </Link>
               </Button>
             </div>
           ) : (
@@ -134,9 +142,11 @@ export default function PlaygroundCard({ project, showInteractButton = false, vi
               <p className="text-sm text-muted-foreground mt-2 italic">
                 {project.comingSoonHint}
               </p>
-              <Button disabled size="sm" variant="outline" className="mt-2 cursor-not-allowed">
-                <Clock className="w-4 h-4 mr-2" />
-                Coming Soon
+              <Button asChild size="sm" variant="outline" className="mt-2">
+                <Link href="/playground">
+                  <Clock className="w-4 h-4 mr-2" />
+                  Coming Soon
+                </Link>
               </Button>
             </div>
           )}

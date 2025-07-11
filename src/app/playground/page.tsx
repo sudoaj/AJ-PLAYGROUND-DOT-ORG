@@ -26,126 +26,37 @@ import {
   SortAsc,
   SortDesc
 } from 'lucide-react';
-
-interface PlaygroundProject {
-  id: string;
-  title: string;
-  description: string;
-  status: 'active' | 'maintenance' | 'beta' | 'coming-soon';
-  category: string;
-  tags: string[];
-  lastUpdated: string;
-  featured: boolean;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  estimatedTime: string;
-  tech: string[];
-}
-
-// Enhanced project data with better categorization
-const enhancedProjects: PlaygroundProject[] = [
-  {
-    id: 'position-fit',
-    title: 'Position Fit Analyzer',
-    description: 'AI-powered job matching and resume optimization tool',
-    status: 'active',
-    category: 'AI & ML',
-    tags: ['AI', 'Resume', 'Job Matching', 'NLP'],
-    lastUpdated: '2024-01-15',
-    featured: true,
-    difficulty: 'intermediate',
-    estimatedTime: '10-15 min',
-    tech: ['Next.js', 'OpenAI', 'TypeScript']
-  },
-  {
-    id: 'resume-builder',
-    title: 'Resume Builder',
-    description: 'Professional resume creation tool with templates',
-    status: 'beta',
-    category: 'Productivity',
-    tags: ['Resume', 'Templates', 'PDF'],
-    lastUpdated: '2024-01-10',
-    featured: true,
-    difficulty: 'beginner',
-    estimatedTime: '5-10 min',
-    tech: ['React', 'PDF.js', 'CSS']
-  },
-  {
-    id: 'developer-cheatsheet',
-    title: 'Developer Cheatsheet',
-    description: 'Quick reference guide for developers',
-    status: 'active',
-    category: 'Development',
-    tags: ['Reference', 'Commands', 'Quick Guide'],
-    lastUpdated: '2024-01-12',
-    featured: false,
-    difficulty: 'beginner',
-    estimatedTime: '2-5 min',
-    tech: ['React', 'TypeScript', 'CSS']
-  },
-  {
-    id: 'retro-games',
-    title: 'Retro Games',
-    description: 'Classic games collection',
-    status: 'maintenance',
-    category: 'Games',
-    tags: ['Games', 'Retro', 'Entertainment'],
-    lastUpdated: '2024-01-08',
-    featured: false,
-    difficulty: 'beginner',
-    estimatedTime: '10+ min',
-    tech: ['JavaScript', 'Canvas', 'CSS']
-  },
-  {
-    id: 'tip-calculator',
-    title: 'Tip Calculator',
-    description: 'Calculate tips and split bills easily',
-    status: 'active',
-    category: 'Utilities',
-    tags: ['Calculator', 'Finance', 'Utility'],
-    lastUpdated: '2024-01-14',
-    featured: false,
-    difficulty: 'beginner',
-    estimatedTime: '2-3 min',
-    tech: ['React', 'TypeScript']
-  },
-  {
-    id: 'basic-calculator',
-    title: 'Basic Calculator',
-    description: 'Simple arithmetic calculator',
-    status: 'active',
-    category: 'Utilities',
-    tags: ['Calculator', 'Math', 'Basic'],
-    lastUpdated: '2024-01-11',
-    featured: false,
-    difficulty: 'beginner',
-    estimatedTime: '1-2 min',
-    tech: ['React', 'JavaScript']
-  }
-];
+import { PlaygroundProject } from '@/types';
 
 const categories = [
   { id: 'all', label: 'All Projects', icon: Grid3X3 },
-  { id: 'AI & ML', label: 'AI & ML', icon: Zap },
-  { id: 'Productivity', label: 'Productivity', icon: Star },
-  { id: 'Development', label: 'Development', icon: Code },
-  { id: 'Games', label: 'Games', icon: Star },
-  { id: 'Utilities', label: 'Utilities', icon: Grid3X3 }
+  { id: 'AI Tool', label: 'AI Tool', icon: Zap },
+  { id: 'Tool', label: 'Tool', icon: Star },
+  { id: 'Gaming', label: 'Gaming', icon: Code },
+  { id: 'Utility', label: 'Utility', icon: Grid3X3 },
+  { id: 'Visualization', label: 'Visualization', icon: Star }
 ];
 
+const getStatusFromProject = (project: PlaygroundProject) => {
+  if (project.isLive && !project.isAbandoned) return 'live';
+  if (project.isAbandoned) return 'abandoned';
+  return 'coming-soon';
+};
+
 const statusColors = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  beta: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  maintenance: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+  live: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  abandoned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   'coming-soon': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
 };
 
 export default function PlaygroundPage() {
-  const [projects, setProjects] = useState<PlaygroundProject[]>(enhancedProjects);
-  const [filteredProjects, setFilteredProjects] = useState<PlaygroundProject[]>(enhancedProjects);
+  const allPlaygroundProjects = getAllPlaygroundProjects();
+  const [projects, setProjects] = useState<PlaygroundProject[]>(allPlaygroundProjects);
+  const [filteredProjects, setFilteredProjects] = useState<PlaygroundProject[]>(allPlaygroundProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+  
   const [sortBy, setSortBy] = useState('featured');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -169,12 +80,7 @@ export default function PlaygroundPage() {
 
     // Status filter
     if (selectedStatus !== 'all') {
-      filtered = filtered.filter(project => project.status === selectedStatus);
-    }
-
-    // Difficulty filter
-    if (selectedDifficulty !== 'all') {
-      filtered = filtered.filter(project => project.difficulty === selectedDifficulty);
+      filtered = filtered.filter(project => getStatusFromProject(project) === selectedStatus);
     }
 
     // Sort
@@ -186,18 +92,13 @@ export default function PlaygroundPage() {
           aValue = a.title.toLowerCase();
           bValue = b.title.toLowerCase();
           break;
-        case 'lastUpdated':
-          aValue = new Date(a.lastUpdated).getTime();
-          bValue = new Date(b.lastUpdated).getTime();
+        case 'status':
+          aValue = getStatusFromProject(a);
+          bValue = getStatusFromProject(b);
           break;
-        case 'featured':
-          aValue = a.featured ? 1 : 0;
-          bValue = b.featured ? 1 : 0;
-          break;
-        case 'difficulty':
-          const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 };
-          aValue = difficultyOrder[a.difficulty];
-          bValue = difficultyOrder[b.difficulty];
+        case 'category':
+          aValue = a.category.toLowerCase();
+          bValue = b.category.toLowerCase();
           break;
         default:
           aValue = a.title.toLowerCase();
@@ -214,56 +115,14 @@ export default function PlaygroundPage() {
     setFilteredProjects(filtered);
   }, [projects, searchTerm, selectedCategory, selectedStatus, selectedDifficulty, sortBy, sortOrder]);
 
-  const featuredProjects = filteredProjects.filter(p => p.featured);
-  const activeProjects = filteredProjects.filter(p => p.status === 'active');
-  const betaProjects = filteredProjects.filter(p => p.status === 'beta');
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'advanced': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
+  const liveProjects = filteredProjects.filter(p => p.isLive && !p.isAbandoned);
+  const abandonedProjects = filteredProjects.filter(p => p.isAbandoned);
+  const comingSoonProjects = filteredProjects.filter(p => !p.isLive && !p.isAbandoned);
 
   const ProjectGrid = ({ projects }: { projects: PlaygroundProject[] }) => (
     <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
       {projects.map((project) => (
-        <div key={project.id} className={`group ${viewMode === 'list' ? 'flex gap-4' : ''}`}>
-          <PlaygroundCard project={project} />
-          {viewMode === 'list' && (
-            <div className="flex-1 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-semibold text-lg">{project.title}</h3>
-                <Badge className={statusColors[project.status]}>
-                  {project.status}
-                </Badge>
-                <Badge className={getDifficultyColor(project.difficulty)}>
-                  {project.difficulty}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground mb-3">{project.description}</p>
-              <div className="flex flex-wrap gap-1 mb-3">
-                {project.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {project.estimatedTime}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {new Date(project.lastUpdated).toLocaleDateString()}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <PlaygroundCard key={project.id} project={project} viewMode={viewMode} />
       ))}
     </div>
   );
@@ -312,7 +171,7 @@ export default function PlaygroundPage() {
               </div>
 
               {/* Filters Row */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger>
                     <SelectValue placeholder="Category" />
@@ -332,22 +191,9 @@ export default function PlaygroundPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="beta">Beta</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    <SelectItem value="live">Live</SelectItem>
+                    <SelectItem value="abandoned">Abandoned</SelectItem>
                     <SelectItem value="coming-soon">Coming Soon</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Difficulty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Levels</SelectItem>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -356,10 +202,9 @@ export default function PlaygroundPage() {
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="featured">Featured</SelectItem>
                     <SelectItem value="title">Title</SelectItem>
-                    <SelectItem value="lastUpdated">Last Updated</SelectItem>
-                    <SelectItem value="difficulty">Difficulty</SelectItem>
+                    <SelectItem value="status">Status</SelectItem>
+                    <SelectItem value="category">Category</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -407,25 +252,25 @@ export default function PlaygroundPage() {
         <Tabs defaultValue="all" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="all">All ({filteredProjects.length})</TabsTrigger>
-            <TabsTrigger value="featured">Featured ({featuredProjects.length})</TabsTrigger>
-            <TabsTrigger value="active">Active ({activeProjects.length})</TabsTrigger>
-            <TabsTrigger value="beta">Beta ({betaProjects.length})</TabsTrigger>
+            <TabsTrigger value="live">Live ({liveProjects.length})</TabsTrigger>
+            <TabsTrigger value="abandoned">Abandoned ({abandonedProjects.length})</TabsTrigger>
+            <TabsTrigger value="coming-soon">Coming Soon ({comingSoonProjects.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-6">
             <ProjectGrid projects={filteredProjects} />
           </TabsContent>
 
-          <TabsContent value="featured" className="space-y-6">
-            <ProjectGrid projects={featuredProjects} />
+          <TabsContent value="live" className="space-y-6">
+            <ProjectGrid projects={liveProjects} />
           </TabsContent>
 
-          <TabsContent value="active" className="space-y-6">
-            <ProjectGrid projects={activeProjects} />
+          <TabsContent value="abandoned" className="space-y-6">
+            <ProjectGrid projects={abandonedProjects} />
           </TabsContent>
 
-          <TabsContent value="beta" className="space-y-6">
-            <ProjectGrid projects={betaProjects} />
+          <TabsContent value="coming-soon" className="space-y-6">
+            <ProjectGrid projects={comingSoonProjects} />
           </TabsContent>
         </Tabs>
 
