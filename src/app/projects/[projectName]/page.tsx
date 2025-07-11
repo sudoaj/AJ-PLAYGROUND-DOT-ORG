@@ -1,6 +1,5 @@
 import { getProjectBySlug, getAllProjects } from '@/lib/projects';
 import { notFound } from 'next/navigation';
-
 import ReactMarkdown from 'react-markdown';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, CalendarDays, ExternalLink, Briefcase, Code, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -73,7 +72,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               <div className="text-sm opacity-80">{projectData.language}</div>
             </div>
           </div>
-          <div className="flex-1"></div>
+          <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               {projectData.title}
             </h1>
