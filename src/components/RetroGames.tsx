@@ -675,6 +675,7 @@ export default function RetroGames() {
                     variant="outline"
                     size="sm"
                     onTouchStart={() => handleVirtualControl('up')}
+                    onClick={() => handleVirtualControl('up')}
                     className="w-12 h-12 p-0"
                   >
                     ↑
@@ -684,6 +685,7 @@ export default function RetroGames() {
                       variant="outline"
                       size="sm"
                       onTouchStart={() => handleVirtualControl('left')}
+                      onClick={() => handleVirtualControl('left')}
                       className="w-12 h-12 p-0"
                     >
                       ←
@@ -692,6 +694,7 @@ export default function RetroGames() {
                       variant="outline"
                       size="sm"
                       onTouchStart={() => handleVirtualControl('down')}
+                      onClick={() => handleVirtualControl('down')}
                       className="w-12 h-12 p-0"
                     >
                       ↓
@@ -700,6 +703,7 @@ export default function RetroGames() {
                       variant="outline"
                       size="sm"
                       onTouchStart={() => handleVirtualControl('right')}
+                      onClick={() => handleVirtualControl('right')}
                       className="w-12 h-12 p-0"
                     >
                       →
@@ -718,6 +722,7 @@ export default function RetroGames() {
                         variant="outline"
                         size="sm"
                         onTouchStart={() => handleVirtualControl('p1-up')}
+                        onClick={() => handleVirtualControl('p1-up')}
                         className="w-12 h-8 p-0"
                       >
                         ↑
@@ -726,6 +731,7 @@ export default function RetroGames() {
                         variant="outline"
                         size="sm"
                         onTouchStart={() => handleVirtualControl('p1-down')}
+                        onClick={() => handleVirtualControl('p1-down')}
                         className="w-12 h-8 p-0"
                       >
                         ↓
@@ -739,6 +745,7 @@ export default function RetroGames() {
                         variant="outline"
                         size="sm"
                         onTouchStart={() => handleVirtualControl('p2-up')}
+                        onClick={() => handleVirtualControl('p2-up')}
                         className="w-12 h-8 p-0"
                       >
                         ↑
@@ -747,6 +754,7 @@ export default function RetroGames() {
                         variant="outline"
                         size="sm"
                         onTouchStart={() => handleVirtualControl('p2-down')}
+                        onClick={() => handleVirtualControl('p2-down')}
                         className="w-12 h-8 p-0"
                       >
                         ↓
@@ -764,6 +772,7 @@ export default function RetroGames() {
                       variant="outline"
                       size="sm"
                       onTouchStart={() => handleVirtualControl('rotate')}
+                      onClick={() => handleVirtualControl('rotate')}
                       className="w-16 h-10 p-0 text-xs"
                     >
                       ↻
@@ -774,6 +783,7 @@ export default function RetroGames() {
                       variant="outline"
                       size="sm"
                       onTouchStart={() => handleVirtualControl('left')}
+                      onClick={() => handleVirtualControl('left')}
                       className="w-12 h-10 p-0"
                     >
                       ←
@@ -782,6 +792,7 @@ export default function RetroGames() {
                       variant="outline"
                       size="sm"
                       onTouchStart={() => handleVirtualControl('down')}
+                      onClick={() => handleVirtualControl('down')}
                       className="w-12 h-10 p-0"
                     >
                       ↓
@@ -790,6 +801,7 @@ export default function RetroGames() {
                       variant="outline"
                       size="sm"
                       onTouchStart={() => handleVirtualControl('right')}
+                      onClick={() => handleVirtualControl('right')}
                       className="w-12 h-10 p-0"
                     >
                       →
