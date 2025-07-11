@@ -25,6 +25,7 @@ export default function RetroGames() {
   const [currentGame, setCurrentGame] = useState<GameType>('menu');
   const [score, setScore] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
@@ -63,8 +64,8 @@ export default function RetroGames() {
   const [lines, setLines] = useState(0);
 
   const GRID_SIZE = 20;
-  const CANVAS_WIDTH = 400;
-  const CANVAS_HEIGHT = 300;
+  const CANVAS_WIDTH = isMobile ? 320 : 400;
+  const CANVAS_HEIGHT = isMobile ? 240 : 300;
 
   // Tetris pieces
   const tetrisPieces = [
@@ -91,8 +92,18 @@ export default function RetroGames() {
       setIsFullscreen(!!document.fullscreenElement);
     };
 
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
   }, []);
 
   // Tetris helper functions
@@ -467,6 +478,68 @@ export default function RetroGames() {
     setCurrentGame(game);
   };
 
+  // Touch/Virtual control handlers
+  const handleVirtualControl = (action: string) => {
+    if (currentGame === 'snake') {
+      switch (action) {
+        case 'up':
+          if (direction.y === 0) setDirection({ x: 0, y: -1 });
+          break;
+        case 'down':
+          if (direction.y === 0) setDirection({ x: 0, y: 1 });
+          break;
+        case 'left':
+          if (direction.x === 0) setDirection({ x: -1, y: 0 });
+          break;
+        case 'right':
+          if (direction.x === 0) setDirection({ x: 1, y: 0 });
+          break;
+      }
+    } else if (currentGame === 'pong') {
+      switch (action) {
+        case 'p1-up':
+          setPaddle1Y(prev => Math.max(0, prev - 20));
+          break;
+        case 'p1-down':
+          setPaddle1Y(prev => Math.min(CANVAS_HEIGHT - 60, prev + 20));
+          break;
+        case 'p2-up':
+          setPaddle2Y(prev => Math.max(0, prev - 20));
+          break;
+        case 'p2-down':
+          setPaddle2Y(prev => Math.min(CANVAS_HEIGHT - 60, prev + 20));
+          break;
+      }
+    } else if (currentGame === 'tetris') {
+      switch (action) {
+        case 'left':
+          setCurrentPiece(prev => {
+            const newPiece = { ...prev, x: prev.x - 1 };
+            return isValidPosition(newPiece, tetrisBoard) ? newPiece : prev;
+          });
+          break;
+        case 'right':
+          setCurrentPiece(prev => {
+            const newPiece = { ...prev, x: prev.x + 1 };
+            return isValidPosition(newPiece, tetrisBoard) ? newPiece : prev;
+          });
+          break;
+        case 'down':
+          setCurrentPiece(prev => {
+            const newPiece = { ...prev, y: prev.y + 1 };
+            return isValidPosition(newPiece, tetrisBoard) ? newPiece : prev;
+          });
+          break;
+        case 'rotate':
+          setCurrentPiece(prev => {
+            const rotated = rotatePiece(prev);
+            return isValidPosition(rotated, tetrisBoard) ? rotated : prev;
+          });
+          break;
+      }
+    }
+  };
+
   if (currentGame === 'menu') {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -481,7 +554,7 @@ export default function RetroGames() {
           </CardHeader>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => startGame('snake')}>
             <CardHeader className="text-center">
               <div className="text-4xl mb-2">🐍</div>
@@ -542,36 +615,42 @@ export default function RetroGames() {
   return (
     <div 
       ref={gameContainerRef}
-      className={`container mx-auto px-4 py-8 max-w-4xl ${isFullscreen ? 'h-screen flex flex-col justify-center' : ''}`}
+      className={`container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl ${isFullscreen ? 'h-screen flex flex-col justify-center' : ''}`}
     >
       <Card>
         <CardHeader className="text-center">
-          <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={() => setCurrentGame('menu')}>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0">
+            <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={() => setCurrentGame('menu')}>
               ← Back to Games
             </Button>
-            <CardTitle className="text-2xl">
+            <CardTitle className={`${isMobile ? 'text-lg' : 'text-2xl'} text-center sm:text-left`}>
               {currentGame === 'snake' && '🐍 Snake'}
               {currentGame === 'pong' && '🏓 Pong'}
               {currentGame === 'tetris' && '🧩 Tetris'}
             </CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={toggleFullscreen}>
-                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            <div className="flex gap-1 sm:gap-2">
+              <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={toggleFullscreen}>
+                {isFullscreen ? <Minimize className="h-3 w-3 sm:h-4 sm:w-4" /> : <Maximize className="h-3 w-3 sm:h-4 sm:w-4" />}
               </Button>
-              <Button variant="outline" onClick={resetGame}>
-                Reset Game
+              <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={resetGame}>
+                {isMobile ? 'Reset' : 'Reset Game'}
               </Button>
             </div>
           </div>
           {currentGame === 'snake' && (
-            <CardDescription>Score: {score} {gameOver && '- Game Over!'}</CardDescription>
+            <CardDescription className={`${isMobile ? 'text-sm' : ''} text-center`}>
+              Score: {score} {gameOver && '- Game Over!'}
+            </CardDescription>
           )}
           {currentGame === 'pong' && (
-            <CardDescription>Player 1: {player1Score} | Player 2: {player2Score}</CardDescription>
+            <CardDescription className={`${isMobile ? 'text-sm' : ''} text-center`}>
+              Player 1: {player1Score} | Player 2: {player2Score}
+            </CardDescription>
           )}
           {currentGame === 'tetris' && (
-            <CardDescription>Score: {tetrisScore} | Lines: {lines} | Level: {level} {gameOver && '- Game Over!'}</CardDescription>
+            <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm'} text-center`}>
+              Score: {tetrisScore} | Lines: {lines} | Level: {level} {gameOver && '- Game Over!'}
+            </CardDescription>
           )}
         </CardHeader>
         <CardContent className="flex flex-col items-center">
@@ -579,23 +658,162 @@ export default function RetroGames() {
             ref={canvasRef}
             width={CANVAS_WIDTH}
             height={CANVAS_HEIGHT}
-            className="border-2 border-border rounded-lg bg-black"
-            style={{ imageRendering: 'pixelated' }}
+            className="border-2 border-border rounded-lg bg-black max-w-full"
+            style={{ 
+              imageRendering: 'pixelated',
+              width: isMobile ? '100%' : 'auto',
+              maxWidth: isMobile ? '100vw' : '400px'
+            }}
           />
+          {/* Virtual Controls for Mobile */}
+          {isMobile && (
+            <div className="mt-4 space-y-4">
+              {/* Snake Controls */}
+              {currentGame === 'snake' && (
+                <div className="flex flex-col items-center space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onTouchStart={() => handleVirtualControl('up')}
+                    className="w-12 h-12 p-0"
+                  >
+                    ↑
+                  </Button>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onTouchStart={() => handleVirtualControl('left')}
+                      className="w-12 h-12 p-0"
+                    >
+                      ←
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onTouchStart={() => handleVirtualControl('down')}
+                      className="w-12 h-12 p-0"
+                    >
+                      ↓
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onTouchStart={() => handleVirtualControl('right')}
+                      className="w-12 h-12 p-0"
+                    >
+                      →
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Pong Controls */}
+              {currentGame === 'pong' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-2">Player 1</p>
+                    <div className="flex flex-col space-y-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onTouchStart={() => handleVirtualControl('p1-up')}
+                        className="w-12 h-8 p-0"
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onTouchStart={() => handleVirtualControl('p1-down')}
+                        className="w-12 h-8 p-0"
+                      >
+                        ↓
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-2">Player 2</p>
+                    <div className="flex flex-col space-y-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onTouchStart={() => handleVirtualControl('p2-up')}
+                        className="w-12 h-8 p-0"
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onTouchStart={() => handleVirtualControl('p2-down')}
+                        className="w-12 h-8 p-0"
+                      >
+                        ↓
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tetris Controls */}
+              {currentGame === 'tetris' && (
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onTouchStart={() => handleVirtualControl('rotate')}
+                      className="w-16 h-10 p-0 text-xs"
+                    >
+                      ↻
+                    </Button>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onTouchStart={() => handleVirtualControl('left')}
+                      className="w-12 h-10 p-0"
+                    >
+                      ←
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onTouchStart={() => handleVirtualControl('down')}
+                      className="w-12 h-10 p-0"
+                    >
+                      ↓
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onTouchStart={() => handleVirtualControl('right')}
+                      className="w-12 h-10 p-0"
+                    >
+                      →
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mt-4 text-center">
             {currentGame === 'snake' && (
               <p className="text-sm text-muted-foreground">
-                Use arrow keys to control the snake. Eat red food to grow and score points!
+                {isMobile ? 'Use touch controls above or' : 'Use'} arrow keys to control the snake. Eat red food to grow and score points!
               </p>
             )}
             {currentGame === 'pong' && (
               <p className="text-sm text-muted-foreground">
-                Player 1: W/S keys | Player 2: ↑/↓ keys
+                {isMobile ? 'Use touch controls above or keyboard: ' : ''}Player 1: W/S keys | Player 2: ↑/↓ keys
               </p>
             )}
             {currentGame === 'tetris' && (
               <p className="text-sm text-muted-foreground">
-                Arrow keys to move, Space/↑ to rotate. Clear lines to score!
+                {isMobile ? 'Use touch controls above or' : 'Use'} arrow keys to move, Space/↑ to rotate. Clear lines to score!
               </p>
             )}
           </div>
