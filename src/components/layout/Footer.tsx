@@ -13,8 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
-import { BlogPost } from '@/types';
-import { Project } from '@/lib/projects';
+import { BlogPost, Project } from '@/types';
 
 export default function Footer() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());

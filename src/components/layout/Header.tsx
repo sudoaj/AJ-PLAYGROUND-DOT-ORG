@@ -8,8 +8,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Menu, Download, ChevronDown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
-import { BlogPost, PlaygroundProject } from '@/types';
-import { Project } from '@/lib/projects';
+import { BlogPost, PlaygroundProject, Project } from '@/types';
+import { AuthButton } from '@/components/auth/AuthButton';
 
 const navLinks = [
   { href: '/projects', label: 'Projects', hasDropdown: true },
@@ -208,6 +208,7 @@ const slugify = (text: string): string => {
           Resume
         </Link>
       </Button>
+      <AuthButton />
     </>
   );
   
@@ -336,6 +337,9 @@ const slugify = (text: string): string => {
                     Resume
                   </Link>
                 </Button>
+                <div className="pt-4 border-t">
+                  <AuthButton />
+                </div>
               </div>
             </SheetContent>
           </Sheet>

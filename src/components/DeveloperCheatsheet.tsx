@@ -610,7 +610,7 @@ export default function DeveloperCheatsheet() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => copyToClipboard(entry.example, `example-${key}-${categoryIndex}-${entryIndex}`)}
+                                    onClick={() => copyToClipboard(entry.example || '', `example-${key}-${categoryIndex}-${entryIndex}`)}
                                     className="mt-2 h-8"
                                   >
                                     {copiedItem === `example-${key}-${categoryIndex}-${entryIndex}` ? (

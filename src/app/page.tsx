@@ -9,7 +9,6 @@ export default function Home() {
   return (
     <>
       <HeroSection /> 
-      {/* Apply container to subsequent sections */}
       <div className="container mx-auto px-4 py-8">
         <ProjectsSection />
         <Separator className="my-12 md:my-16 bg-border/20" />

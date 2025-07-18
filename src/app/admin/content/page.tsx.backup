@@ -1,0 +1,561 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Edit, Trash2, Save } from "lucide-react";
+
+interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  published: boolean;
+  featured: boolean;
+  tags: string[];
+  createdAt: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  content: string;
+  language: string;
+  url: string;
+  featured: boolean;
+  status: string;
+  technologies: string[];
+}
+
+interface PlaygroundProject {
+  id: string;
+  title: string;
+  slug: string;
+  emoji: string;
+  description: string;
+  shortDescription: string;
+  content: string;
+  category: string;
+  isLive: boolean;
+  isAbandoned: boolean;
+}
+
+export default function AdminContentPage() {
+  const { data: session } = useSession();
+  const { toast } = useToast();
+  
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [playgroundProjects, setPlaygroundProjects] = useState<PlaygroundProject[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Form states for new content
+  const [newBlogPost, setNewBlogPost] = useState({
+    title: "",
+    excerpt: "",
+    content: "",
+    published: false,
+    featured: false,
+    tags: "",
+  });
+
+  const [newProject, setNewProject] = useState({
+    title: "",
+    description: "",
+    content: "",
+    language: "",
+    url: "",
+    featured: false,
+    status: "active",
+    technologies: "",
+  });
+
+  const [newPlaygroundProject, setNewPlaygroundProject] = useState({
+    title: "",
+    emoji: "",
+    description: "",
+    shortDescription: "",
+    content: "",
+    category: "",
+    isLive: false,
+    isAbandoned: false,
+  });
+
+  const isAdmin = session?.user?.email === "admin@ajplayground.com" || session?.user?.email === "admin2@ajplayground.com";
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchContent();
+    }
+  }, [isAdmin]);
+
+  const fetchContent = async () => {
+    try {
+      const [postsRes, projectsRes, playgroundRes] = await Promise.all([
+        fetch("/api/blog"),
+        fetch("/api/projects"),
+        fetch("/api/playground"),
+      ]);
+
+      if (postsRes.ok) setBlogPosts(await postsRes.json());
+      if (projectsRes.ok) setProjects(await projectsRes.json());
+      if (playgroundRes.ok) setPlaygroundProjects(await playgroundRes.json());
+    } catch (error) {
+      console.error("Error fetching content:", error);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!editingItem || !editingType) return;
+
+    try {
+      const endpoint = editingItem.id ? 
+        `/api/${editingType === 'blog' ? 'posts' : editingType === 'project' ? 'projects' : 'playground'}/id/${editingItem.id}` :
+        `/api/${editingType === 'blog' ? 'posts' : editingType === 'project' ? 'projects' : 'playground'}`;
+
+      const method = editingItem.id ? 'PUT' : 'POST';
+      
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingItem),
+      });
+
+      if (response.ok) {
+        setIsDialogOpen(false);
+        setEditingItem(null);
+        setEditingType(null);
+        fetchContent(); // Refresh the data
+        toast({ title: "Success", description: `${editingType} ${editingItem.id ? 'updated' : 'created'} successfully` });
+      } else {
+        throw new Error(`Failed to ${editingItem.id ? 'update' : 'create'} item`);
+      }
+    } catch (error) {
+      console.error('Error saving item:', error);
+      toast({ title: "Error", description: `Failed to ${editingItem.id ? 'update' : 'create'} item`, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (id: string, type: 'blog' | 'project' | 'playground') => {
+    try {
+      const endpoint = `/api/${type === 'blog' ? 'posts' : type === 'project' ? 'projects' : 'playground'}/id/${id}`;
+      
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchContent(); // Refresh the data
+        toast({ title: "Success", description: `${type} deleted successfully` });
+      } else {
+        throw new Error('Failed to delete item');
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast({ title: "Error", description: "Failed to delete item", variant: "destructive" });
+    }
+  };
+
+  const createProject = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...newProject,
+          technologies: newProject.technologies.split(",").map(tech => tech.trim()).filter(Boolean),
+        }),
+      });
+
+      if (response.ok) {
+        toast({ title: "Success", description: "Project created successfully" });
+        setNewProject({
+          title: "",
+          description: "",
+          content: "",
+          language: "",
+          url: "",
+          featured: false,
+          status: "active",
+          technologies: "",
+        });
+        fetchContent();
+      } else {
+        throw new Error("Failed to create project");
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to create project", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createPlaygroundProject = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/playground", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newPlaygroundProject),
+      });
+
+      if (response.ok) {
+        toast({ title: "Success", description: "Playground project created successfully" });
+        setNewPlaygroundProject({
+          title: "",
+          emoji: "",
+          description: "",
+          shortDescription: "",
+          content: "",
+          category: "",
+          isLive: false,
+          isAbandoned: false,
+        });
+        fetchContent();
+      } else {
+        throw new Error("Failed to create playground project");
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to create playground project", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isAdmin) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">
+              Access denied. Admin privileges required.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Content Management</h1>
+          <Badge variant="default">Admin</Badge>
+        </div>
+
+        <Tabs defaultValue="blog" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="blog">Blog Posts ({blogPosts.length})</TabsTrigger>
+            <TabsTrigger value="projects">Projects ({projects.length})</TabsTrigger>
+            <TabsTrigger value="playground">Playground ({playgroundProjects.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="blog" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Create New Blog Post
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="blog-title">Title</Label>
+                    <Input
+                      id="blog-title"
+                      value={newBlogPost.title}
+                      onChange={(e) => setNewBlogPost({...newBlogPost, title: e.target.value})}
+                      placeholder="Blog post title"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="blog-tags">Tags (comma-separated)</Label>
+                    <Input
+                      id="blog-tags"
+                      value={newBlogPost.tags}
+                      onChange={(e) => setNewBlogPost({...newBlogPost, tags: e.target.value})}
+                      placeholder="react, nextjs, tutorial"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="blog-excerpt">Excerpt</Label>
+                  <Textarea
+                    id="blog-excerpt"
+                    value={newBlogPost.excerpt}
+                    onChange={(e) => setNewBlogPost({...newBlogPost, excerpt: e.target.value})}
+                    placeholder="Brief description of the blog post"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="blog-content">Content (Markdown)</Label>
+                  <Textarea
+                    id="blog-content"
+                    value={newBlogPost.content}
+                    onChange={(e) => setNewBlogPost({...newBlogPost, content: e.target.value})}
+                    placeholder="Write your blog post content in Markdown..."
+                    rows={10}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={newBlogPost.published}
+                      onCheckedChange={(checked) => setNewBlogPost({...newBlogPost, published: checked})}
+                    />
+                    <Label>Published</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={newBlogPost.featured}
+                      onCheckedChange={(checked) => setNewBlogPost({...newBlogPost, featured: checked})}
+                    />
+                    <Label>Featured</Label>
+                  </div>
+                </div>
+                <Button onClick={createBlogPost} disabled={isLoading || !newBlogPost.title}>
+                  <Save className="mr-2 h-4 w-4" />
+                  Create Blog Post
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4">
+              {blogPosts.map((post) => (
+                <Card key={post.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle>{post.title}</CardTitle>
+                        <CardDescription>/{post.slug}</CardDescription>
+                      </div>
+                      <div className="flex gap-2">
+                        {post.published && <Badge variant="default">Published</Badge>}
+                        {post.featured && <Badge variant="secondary">Featured</Badge>}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">{post.excerpt}</p>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {post.tags.map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="projects" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Create New Project
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="project-title">Title</Label>
+                    <Input
+                      id="project-title"
+                      value={newProject.title}
+                      onChange={(e) => setNewProject({...newProject, title: e.target.value})}
+                      placeholder="Project title"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="project-language">Language</Label>
+                    <Input
+                      id="project-language"
+                      value={newProject.language}
+                      onChange={(e) => setNewProject({...newProject, language: e.target.value})}
+                      placeholder="TypeScript, Python, etc."
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="project-url">URL</Label>
+                    <Input
+                      id="project-url"
+                      value={newProject.url}
+                      onChange={(e) => setNewProject({...newProject, url: e.target.value})}
+                      placeholder="https://github.com/..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="project-technologies">Technologies (comma-separated)</Label>
+                    <Input
+                      id="project-technologies"
+                      value={newProject.technologies}
+                      onChange={(e) => setNewProject({...newProject, technologies: e.target.value})}
+                      placeholder="React, Node.js, PostgreSQL"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="project-description">Description</Label>
+                  <Textarea
+                    id="project-description"
+                    value={newProject.description}
+                    onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+                    placeholder="Brief description of the project"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="project-content">Content (Markdown)</Label>
+                  <Textarea
+                    id="project-content"
+                    value={newProject.content}
+                    onChange={(e) => setNewProject({...newProject, content: e.target.value})}
+                    placeholder="Detailed project information in Markdown..."
+                    rows={10}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={newProject.featured}
+                      onCheckedChange={(checked) => setNewProject({...newProject, featured: checked})}
+                    />
+                    <Label>Featured</Label>
+                  </div>
+                </div>
+                <Button onClick={createProject} disabled={isLoading || !newProject.title}>
+                  <Save className="mr-2 h-4 w-4" />
+                  Create Project
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="playground" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Create New Playground Project
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="playground-title">Title</Label>
+                    <Input
+                      id="playground-title"
+                      value={newPlaygroundProject.title}
+                      onChange={(e) => setNewPlaygroundProject({...newPlaygroundProject, title: e.target.value})}
+                      placeholder="Project title"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="playground-emoji">Emoji</Label>
+                    <Input
+                      id="playground-emoji"
+                      value={newPlaygroundProject.emoji}
+                      onChange={(e) => setNewPlaygroundProject({...newPlaygroundProject, emoji: e.target.value})}
+                      placeholder="🚀"
+                      maxLength={2}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="playground-category">Category</Label>
+                    <Input
+                      id="playground-category"
+                      value={newPlaygroundProject.category}
+                      onChange={(e) => setNewPlaygroundProject({...newPlaygroundProject, category: e.target.value})}
+                      placeholder="tools, games, reference"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="playground-short-description">Short Description</Label>
+                  <Input
+                    id="playground-short-description"
+                    value={newPlaygroundProject.shortDescription}
+                    onChange={(e) => setNewPlaygroundProject({...newPlaygroundProject, shortDescription: e.target.value})}
+                    placeholder="Brief one-liner description"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="playground-description">Description</Label>
+                  <Textarea
+                    id="playground-description"
+                    value={newPlaygroundProject.description}
+                    onChange={(e) => setNewPlaygroundProject({...newPlaygroundProject, description: e.target.value})}
+                    placeholder="Detailed description of the playground project"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="playground-content">Content (Markdown)</Label>
+                  <Textarea
+                    id="playground-content"
+                    value={newPlaygroundProject.content}
+                    onChange={(e) => setNewPlaygroundProject({...newPlaygroundProject, content: e.target.value})}
+                    placeholder="Detailed project information in Markdown..."
+                    rows={8}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={newPlaygroundProject.isLive}
+                      onCheckedChange={(checked) => setNewPlaygroundProject({...newPlaygroundProject, isLive: checked})}
+                    />
+                    <Label>Is Live</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={newPlaygroundProject.isAbandoned}
+                      onCheckedChange={(checked) => setNewPlaygroundProject({...newPlaygroundProject, isAbandoned: checked})}
+                    />
+                    <Label>Is Abandoned</Label>
+                  </div>
+                </div>
+                <Button onClick={createPlaygroundProject} disabled={isLoading || !newPlaygroundProject.title}>
+                  <Save className="mr-2 h-4 w-4" />
+                  Create Playground Project
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}

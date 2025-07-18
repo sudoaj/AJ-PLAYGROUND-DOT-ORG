@@ -1,4 +1,4 @@
-import type { Project } from '@/lib/projects';
+import type { Project } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, CalendarDays, Tag } from 'lucide-react';

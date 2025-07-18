@@ -1,10 +1,13 @@
+"use client";
+
 import ProjectCard from '@/components/ui/ProjectCard';
-import { getFeaturedProjects, getAllProjects } from '@/lib/projects';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, Briefcase, Code2, Layers, PlayCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ElementType } from 'react';
+import type { Project } from '@/types';
+import { useState, useEffect } from 'react';
 
 interface StatCardProps {
   icon: ElementType;
@@ -25,9 +28,58 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, className
   </Card>
 );
 
-export default async function ProjectsSection() {
-  const featuredProjects = await getFeaturedProjects();
-  const allProjects = await getAllProjects();
+export default function ProjectsSection() {
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('/api/projects');
+        if (response.ok) {
+          const data = await response.json();
+          setAllProjects(data);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <section id="projects" className="py-16 md:py-24 bg-background/90 scroll-mt-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">
+            Projects & Impact
+          </h2>
+          <p className="text-lg text-muted-foreground mb-12 text-center max-w-2xl mx-auto">
+            A showcase of my key projects and a glimpse into the technologies I&apos;ve worked with.
+          </p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-12 md:mb-16">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-muted rounded-lg h-24"></div>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-muted rounded-lg h-48"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const featuredProjects = allProjects.filter(p => p.featured);
   
   // If we have fewer than 3 featured projects, supplement with regular projects
   let displayProjects = [...featuredProjects];

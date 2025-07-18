@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getAllPlaygroundProjects } from '@/lib/playground';
 import PlaygroundCard from '@/components/ui/PlaygroundCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,9 +49,10 @@ const statusColors = {
 };
 
 export default function PlaygroundPage() {
-  const allPlaygroundProjects = getAllPlaygroundProjects();
-  const [projects, setProjects] = useState<PlaygroundProject[]>(allPlaygroundProjects);
-  const [filteredProjects, setFilteredProjects] = useState<PlaygroundProject[]>(allPlaygroundProjects);
+  const [allPlaygroundProjects, setAllPlaygroundProjects] = useState<PlaygroundProject[]>([]);
+  const [projects, setProjects] = useState<PlaygroundProject[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<PlaygroundProject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -63,6 +63,26 @@ export default function PlaygroundPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('/api/playground');
+        if (response.ok) {
+          const data = await response.json();
+          setAllPlaygroundProjects(data);
+          setProjects(data);
+          setFilteredProjects(data);
+        }
+      } catch (error) {
+        console.error('Error fetching playground projects:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
     let filtered = [...projects];
 
     // Search filter
@@ -70,7 +90,7 @@ export default function PlaygroundPage() {
       filtered = filtered.filter(project =>
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        project.category.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 

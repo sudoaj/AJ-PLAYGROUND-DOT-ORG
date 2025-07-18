@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id               String              @id @default(cuid())
+  name             String?
+  email            String?             @unique
+  emailVerified    DateTime?
+  image            String?
+  password         String?             // For email/password login
+  accounts         Account[]
+  sessions         Session[]
+  role             String              @default("user")
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  
+  // Content relationships
+  blogPosts        BlogPost[]
+  projects         Project[]
+  playgroundProjects PlaygroundProject[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String?
+  content     String
+  published   Boolean  @default(false)
+  featured    Boolean  @default(false)
+  tags        String?  // JSON string of tags array
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  description  String
+  content      String
+  language     String
+  url          String?
+  featured     Boolean  @default(false)
+  status       String   @default("active") // active, completed, abandoned
+  technologies String?  // JSON string of technologies array
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PlaygroundProject {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String
+  emoji            String
+  description      String
+  shortDescription String
+  content          String
+  category         String
+  comingSoonHint   String?
+  isLive           Boolean  @default(false)
+  isAbandoned      Boolean  @default(false)
+  authorId         String
+  author           User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
