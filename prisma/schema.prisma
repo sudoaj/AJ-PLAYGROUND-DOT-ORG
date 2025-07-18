@@ -53,6 +53,12 @@ model User {
   blogPosts        BlogPost[]
   projects         Project[]
   playgroundProjects PlaygroundProject[]
+  
+  // Budget relationships
+  budgetPaychecks  BudgetPaycheck[]
+  budgetItems      BudgetItem[]
+  budgetGoals      BudgetGoal[]
+  budgetBills      BudgetBill[]
 }
 
 model VerificationToken {
@@ -111,4 +117,60 @@ model PlaygroundProject {
   author           User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+// Budget App Models
+model BudgetPaycheck {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Float    @default(0)
+  date        DateTime
+  isExtra     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  budgetItems BudgetItem[]
+  
+  @@unique([userId, date])
+}
+
+model BudgetItem {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paycheckId  String
+  paycheck    BudgetPaycheck @relation(fields: [paycheckId], references: [id], onDelete: Cascade)
+  name        String
+  amount      Float
+  category    String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model BudgetGoal {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  target      Float
+  current     Float    @default(0)
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BudgetBill {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  amount      Float
+  dueDate     DateTime?
+  recurrence  String   @default("Monthly")
+  importance  String   @default("Medium")
+  category    String   @default("Other")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
