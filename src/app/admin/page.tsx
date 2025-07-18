@@ -6,8 +6,13 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
   Mail, 
@@ -28,7 +33,14 @@ import {
   Settings,
   Download,
   Upload,
-  RefreshCw
+  RefreshCw,
+  Plus,
+  Edit,
+  Trash2,
+  Save,
+  X,
+  ExternalLink,
+  Github
 } from "lucide-react";
 
 interface Stats {
@@ -47,8 +59,41 @@ interface RecentActivity {
   timestamp: string;
 }
 
+interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  slug: string;
+  excerpt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  slug: string;
+  technologies: string;
+  demoUrl?: string;
+  githubUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface PlaygroundProject {
+  id: string;
+  title: string;
+  description: string;
+  slug: string;
+  component: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
+  const { toast } = useToast();
   const [stats, setStats] = useState<Stats>({
     blogPosts: 0,
     projects: 0,
@@ -58,6 +103,14 @@ export default function AdminDashboard() {
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Content management state
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [playgroundProjects, setPlaygroundProjects] = useState<PlaygroundProject[]>([]);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingType, setEditingType] = useState<'blog' | 'project' | 'playground' | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -79,6 +132,11 @@ export default function AdminDashboard() {
         projectsRes.json(),
         playgroundRes.json(),
       ]);
+
+      // Set content data for content management
+      setBlogPosts(posts);
+      setProjects(projects);
+      setPlaygroundProjects(playground);
 
       setStats({
         blogPosts: posts.length || 0,
@@ -118,9 +176,108 @@ export default function AdminDashboard() {
       ));
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+      toast({ title: "Error", description: "Failed to fetch dashboard data", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Content management functions
+  const handleEdit = (item: any, type: 'blog' | 'project' | 'playground') => {
+    // Convert technologies array back to JSON string for editing if it's a project
+    const editItem = { ...item };
+    if (type === 'project' && editItem.technologies && Array.isArray(editItem.technologies)) {
+      editItem.technologies = JSON.stringify(editItem.technologies);
+    }
+    setEditingItem(editItem);
+    setEditingType(type);
+    setIsDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!editingItem || !editingType) return;
+
+    try {
+      const endpoint = editingItem.id ? 
+        `/api/${editingType === 'blog' ? 'posts' : editingType === 'project' ? 'projects' : 'playground'}/id/${editingItem.id}` :
+        `/api/${editingType === 'blog' ? 'posts' : editingType === 'project' ? 'projects' : 'playground'}`;
+
+      const method = editingItem.id ? 'PUT' : 'POST';
+      
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingItem),
+      });
+
+      if (response.ok) {
+        setIsDialogOpen(false);
+        setEditingItem(null);
+        setEditingType(null);
+        fetchDashboardData(); // Refresh the data
+        toast({ title: "Success", description: `${editingType} ${editingItem.id ? 'updated' : 'created'} successfully` });
+      } else {
+        throw new Error(`Failed to ${editingItem.id ? 'update' : 'create'} item`);
+      }
+    } catch (error) {
+      console.error('Error saving item:', error);
+      toast({ title: "Error", description: `Failed to ${editingItem.id ? 'update' : 'create'} item`, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (id: string, type: 'blog' | 'project' | 'playground') => {
+    try {
+      const endpoint = `/api/${type === 'blog' ? 'posts' : type === 'project' ? 'projects' : 'playground'}/id/${id}`;
+      
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchDashboardData(); // Refresh the data
+        toast({ title: "Success", description: `${type} deleted successfully` });
+      } else {
+        throw new Error('Failed to delete item');
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast({ title: "Error", description: "Failed to delete item", variant: "destructive" });
+    }
+  };
+
+  const handleNewItem = (type: 'blog' | 'project' | 'playground') => {
+    const newItem = type === 'blog' ? {
+      title: '',
+      content: '',
+      slug: '',
+      excerpt: ''
+    } : type === 'project' ? {
+      title: '',
+      description: '',
+      slug: '',
+      technologies: '[]',
+      demoUrl: '',
+      githubUrl: ''
+    } : {
+      title: '',
+      description: '',
+      slug: '',
+      component: ''
+    };
+
+    setEditingItem(newItem);
+    setEditingType(type);
+    setIsDialogOpen(true);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   if (status === "loading") {
@@ -249,79 +406,58 @@ export default function AdminDashboard() {
               </div>
 
               {/* Content Overview */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="hover:shadow-lg transition-shadow">
+              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+                <Card className="hover:shadow-lg transition-shadow lg:col-span-2">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-blue-500" />
-                      Blog Posts
+                      <Settings className="h-5 w-5 text-purple-500" />
+                      Content Management
                     </CardTitle>
-                    <CardDescription>Published articles and content</CardDescription>
+                    <CardDescription>Manage all your content in one place</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-3xl font-bold">{stats.blogPosts}</span>
-                        <Badge variant="secondary">Active</Badge>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-bold text-blue-500">{stats.blogPosts}</div>
+                        <div className="text-sm text-muted-foreground">Blog Posts</div>
                       </div>
-                      <Progress value={75} className="h-2" />
-                      <Button variant="outline" size="sm" className="w-full" asChild>
-                        <a href="/admin/content">
-                          <Settings className="w-4 h-4 mr-2" />
-                          Manage Posts
-                        </a>
-                      </Button>
+                      <div>
+                        <div className="text-2xl font-bold text-green-500">{stats.projects}</div>
+                        <div className="text-sm text-muted-foreground">Projects</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-purple-500">{stats.playgroundProjects}</div>
+                        <div className="text-sm text-muted-foreground">Playground</div>
+                      </div>
                     </div>
+                    <Button className="w-full" onClick={() => (document.querySelector('[data-value="content"]') as HTMLElement)?.click()}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Manage Content
+                    </Button>
                   </CardContent>
                 </Card>
 
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <FolderOpen className="h-5 w-5 text-green-500" />
-                      Projects
+                      <Database className="h-5 w-5 text-blue-500" />
+                      Quick Actions
                     </CardTitle>
-                    <CardDescription>Portfolio and showcase items</CardDescription>
+                    <CardDescription>Common admin tasks</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-3xl font-bold">{stats.projects}</span>
-                        <Badge variant="secondary">Live</Badge>
-                      </div>
-                      <Progress value={90} className="h-2" />
-                      <Button variant="outline" size="sm" className="w-full" asChild>
-                        <a href="/admin/content">
-                          <Settings className="w-4 h-4 mr-2" />
-                          Manage Projects
-                        </a>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Gamepad2 className="h-5 w-5 text-purple-500" />
-                      Playground
-                    </CardTitle>
-                    <CardDescription>Interactive demos and tools</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-3xl font-bold">{stats.playgroundProjects}</span>
-                        <Badge variant="secondary">Interactive</Badge>
-                      </div>
-                      <Progress value={85} className="h-2" />
-                      <Button variant="outline" size="sm" className="w-full" asChild>
-                        <a href="/admin/content">
-                          <Settings className="w-4 h-4 mr-2" />
-                          Manage Playground
-                        </a>
-                      </Button>
-                    </div>
+                  <CardContent className="space-y-3">
+                    <Button variant="outline" className="w-full">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Import Content
+                    </Button>
+                    <Button variant="outline" className="w-full">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Data
+                    </Button>
+                    <Button variant="outline" className="w-full">
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Backup Database
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -361,87 +497,298 @@ export default function AdminDashboard() {
             </TabsContent>
 
             <TabsContent value="content" className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-3">
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-blue-500" />
-                      Content Management
-                    </CardTitle>
-                    <CardDescription>Manage all your content in one place</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Button className="w-full" asChild>
-                      <a href="/admin/content">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Open Content Manager
-                      </a>
-                    </Button>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Blog Posts:</span>
-                        <span className="font-medium">{stats.blogPosts}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Projects:</span>
-                        <span className="font-medium">{stats.projects}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Playground:</span>
-                        <span className="font-medium">{stats.playgroundProjects}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              <Tabs defaultValue="blog" className="space-y-6">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="blog">Blog Posts ({blogPosts.length})</TabsTrigger>
+                  <TabsTrigger value="projects">Projects ({projects.length})</TabsTrigger>
+                  <TabsTrigger value="playground">Playground ({playgroundProjects.length})</TabsTrigger>
+                </TabsList>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Upload className="h-5 w-5 text-green-500" />
-                      Import & Export
-                    </CardTitle>
-                    <CardDescription>Backup and migrate your content</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Button variant="outline" className="w-full">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Import Content
+                {/* Blog Posts Tab */}
+                <TabsContent value="blog" className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-semibold">Blog Posts</h2>
+                    <Button onClick={() => handleNewItem('blog')}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      New Post
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      <Download className="w-4 h-4 mr-2" />
-                      Export All Data
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <Database className="w-4 h-4 mr-2" />
-                      Database Backup
-                    </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {blogPosts.map((post) => (
+                      <Card key={post.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-blue-500" />
+                                {post.title}
+                              </CardTitle>
+                              <CardDescription className="mt-2">
+                                Slug: /{post.slug}
+                              </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {formatDate(post.createdAt)}
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(post, 'blog')}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Blog Post</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "{post.title}"? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(post.id, 'blog')}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {post.excerpt || post.content.substring(0, 150) + "..."}
+                          </p>
+                          <div className="mt-4 flex items-center gap-2">
+                            <Button variant="ghost" size="sm" asChild>
+                              <a href={`/blog/${post.slug}`} target="_blank">
+                                <ExternalLink className="w-4 h-4 mr-1" />
+                                View
+                              </a>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5 text-purple-500" />
-                      Quick Actions
-                    </CardTitle>
-                    <CardDescription>Common administrative tasks</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Button variant="outline" className="w-full">
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Rebuild Search Index
+                {/* Projects Tab */}
+                <TabsContent value="projects" className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-semibold">Projects</h2>
+                    <Button onClick={() => handleNewItem('project')}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      New Project
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      <Globe className="w-4 h-4 mr-2" />
-                      Clear Cache
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {projects.map((project) => (
+                      <Card key={project.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="flex items-center gap-2">
+                                <FolderOpen className="h-5 w-5 text-green-500" />
+                                {project.title}
+                              </CardTitle>
+                              <CardDescription className="mt-2">
+                                Slug: /{project.slug}
+                              </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {formatDate(project.createdAt)}
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(project, 'project')}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "{project.title}"? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(project.id, 'project')}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {project.description}
+                          </p>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {(() => {
+                              let technologies = [];
+                              try {
+                                if (typeof project.technologies === 'string') {
+                                  technologies = JSON.parse(project.technologies);
+                                } else if (Array.isArray(project.technologies)) {
+                                  technologies = project.technologies;
+                                }
+                              } catch (e) {
+                                if (typeof project.technologies === 'string') {
+                                  technologies = [project.technologies];
+                                }
+                              }
+                              return technologies.map((tech: string, index: number) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {tech}
+                                </Badge>
+                              ));
+                            })()}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" asChild>
+                              <a href={`/projects/${project.slug}`} target="_blank">
+                                <ExternalLink className="w-4 h-4 mr-1" />
+                                View
+                              </a>
+                            </Button>
+                            {project.demoUrl && (
+                              <Button variant="ghost" size="sm" asChild>
+                                <a href={project.demoUrl} target="_blank">
+                                  <Globe className="w-4 h-4 mr-1" />
+                                  Demo
+                                </a>
+                              </Button>
+                            )}
+                            {project.githubUrl && (
+                              <Button variant="ghost" size="sm" asChild>
+                                <a href={project.githubUrl} target="_blank">
+                                  <Github className="w-4 h-4 mr-1" />
+                                  Code
+                                </a>
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+
+                {/* Playground Tab */}
+                <TabsContent value="playground" className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-semibold">Playground Projects</h2>
+                    <Button onClick={() => handleNewItem('playground')}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      New Playground
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      <Server className="w-4 h-4 mr-2" />
-                      Health Check
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {playgroundProjects.map((playground) => (
+                      <Card key={playground.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="flex items-center gap-2">
+                                <Gamepad2 className="h-5 w-5 text-purple-500" />
+                                {playground.title}
+                              </CardTitle>
+                              <CardDescription className="mt-2">
+                                Slug: /{playground.slug}
+                              </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {formatDate(playground.createdAt)}
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(playground, 'playground')}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Playground Project</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "{playground.title}"? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(playground.id, 'playground')}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {playground.description}
+                          </p>
+                          <div className="mb-3">
+                            <Badge variant="outline" className="text-xs">
+                              Component: {playground.component}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" asChild>
+                              <a href={`/playground/${playground.slug}`} target="_blank">
+                                <ExternalLink className="w-4 h-4 mr-1" />
+                                View
+                              </a>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-6">
@@ -599,6 +946,144 @@ export default function AdminDashboard() {
           </Tabs>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingItem?.id ? 'Edit' : 'Create'} {editingType === 'blog' ? 'Blog Post' : editingType === 'project' ? 'Project' : 'Playground Project'}
+            </DialogTitle>
+            <DialogDescription>
+              Fill in the details below to {editingItem?.id ? 'update' : 'create'} the item.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Title</label>
+                <Input
+                  value={editingItem.title || ''}
+                  onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                  placeholder="Enter title"
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Slug</label>
+                <Input
+                  value={editingItem.slug || ''}
+                  onChange={(e) => setEditingItem({ ...editingItem, slug: e.target.value })}
+                  placeholder="Enter URL slug"
+                />
+              </div>
+              
+              {editingType === 'blog' && (
+                <>
+                  <div>
+                    <label className="text-sm font-medium">Excerpt</label>
+                    <Textarea
+                      value={editingItem.excerpt || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, excerpt: e.target.value })}
+                      placeholder="Short description"
+                      rows={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Content</label>
+                    <Textarea
+                      value={editingItem.content || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })}
+                      placeholder="Full content (Markdown supported)"
+                      rows={8}
+                    />
+                  </div>
+                </>
+              )}
+              
+              {editingType === 'project' && (
+                <>
+                  <div>
+                    <label className="text-sm font-medium">Description</label>
+                    <Textarea
+                      value={editingItem.description || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
+                      placeholder="Project description"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Technologies (JSON Array)</label>
+                    <Textarea
+                      value={editingItem.technologies || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, technologies: e.target.value })}
+                      placeholder='["React", "TypeScript", "Next.js"]'
+                      rows={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Demo URL</label>
+                    <Input
+                      value={editingItem.demoUrl || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, demoUrl: e.target.value })}
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">GitHub URL</label>
+                    <Input
+                      value={editingItem.githubUrl || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, githubUrl: e.target.value })}
+                      placeholder="https://github.com/..."
+                    />
+                  </div>
+                </>
+              )}
+              
+              {editingType === 'playground' && (
+                <>
+                  <div>
+                    <label className="text-sm font-medium">Description</label>
+                    <Textarea
+                      value={editingItem.description || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
+                      placeholder="Playground description"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Component</label>
+                    <Input
+                      value={editingItem.component || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, component: e.target.value })}
+                      placeholder="ComponentName"
+                    />
+                  </div>
+                </>
+              )}
+              
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    setEditingItem(null);
+                    setEditingType(null);
+                  }}
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button onClick={handleSave}>
+                  <Save className="w-4 h-4 mr-2" />
+                  {editingItem?.id ? 'Update' : 'Create'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

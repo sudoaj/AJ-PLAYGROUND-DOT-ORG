@@ -126,7 +126,12 @@ export default function ContentManagement() {
   };
 
   const handleEdit = (item: any, type: 'blog' | 'project' | 'playground') => {
-    setEditingItem({ ...item });
+    // Convert technologies array back to JSON string for editing if it's a project
+    const editItem = { ...item };
+    if (type === 'project' && editItem.technologies && Array.isArray(editItem.technologies)) {
+      editItem.technologies = JSON.stringify(editItem.technologies);
+    }
+    setEditingItem(editItem);
     setEditingType(type);
     setIsDialogOpen(true);
   };
@@ -401,7 +406,12 @@ export default function ContentManagement() {
                         <div className="flex flex-wrap gap-1 mb-4">
                           {(() => {
                             try {
-                              return JSON.parse(project.technologies).map((tech: string, index: number) => (
+                              // Handle both array and string formats
+                              const techs = Array.isArray(project.technologies) 
+                                ? project.technologies 
+                                : JSON.parse(project.technologies);
+                              
+                              return techs.map((tech: string, index: number) => (
                                 <Badge key={index} variant="outline" className="text-xs">
                                   {tech}
                                 </Badge>
@@ -410,7 +420,7 @@ export default function ContentManagement() {
                               console.error('Error parsing technologies:', error);
                               return (
                                 <Badge variant="outline" className="text-xs">
-                                  {project.technologies}
+                                  {typeof project.technologies === 'string' ? project.technologies : 'Invalid data'}
                                 </Badge>
                               );
                             }

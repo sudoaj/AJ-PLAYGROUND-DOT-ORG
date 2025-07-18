@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -9,6 +10,27 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
     const { slug } = await params;
     
     const project = await prisma.playgroundProject.findUnique({
@@ -27,7 +49,24 @@ export async function GET(
       return NextResponse.json({ error: 'Playground project not found' }, { status: 404 });
     }
 
-    return NextResponse.json(project);
+    // Check if user has access to this project
+    const isAdmin = session.user.email === "admin@ajplayground.com" || session.user.email === "admin2@ajplayground.com";
+    const hasAccess = project.authorId === user.id || project.isLive || isAdmin;
+    
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: "Access denied. You can only access your own projects or public live projects." },
+        { status: 403 }
+      );
+    }
+
+    // Add owner flag
+    const projectWithOwnerFlag = {
+      ...project,
+      isOwner: project.authorId === user.id,
+    };
+
+    return NextResponse.json(projectWithOwnerFlag);
   } catch (error) {
     console.error('Error fetching playground project:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

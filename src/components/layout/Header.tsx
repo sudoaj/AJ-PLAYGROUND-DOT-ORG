@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Menu, Download, ChevronDown } from 'lucide-react';
+import { Menu, Download, ChevronDown, Lock } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { BlogPost, PlaygroundProject, Project } from '@/types';
 import { AuthButton } from '@/components/auth/AuthButton';
 
@@ -19,6 +20,7 @@ const navLinks = [
 
 export default function Header() {
   const isMobile = useIsMobile();
+  const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -29,14 +31,13 @@ export default function Header() {
   useEffect(() => {
     setMounted(true);
     loadData();
-  }, []);
+  }, [session]);
 
   const loadData = async () => {
     try {
-      const [projectsResponse, postsResponse, playgroundResponse] = await Promise.all([
+      const [projectsResponse, postsResponse] = await Promise.all([
         fetch('/api/projects'),
-        fetch('/api/posts'),
-        fetch('/api/playground')
+        fetch('/api/posts')
       ]);
 
       if (projectsResponse.ok) {
@@ -49,9 +50,25 @@ export default function Header() {
         setBlogPosts(postsData);
       }
 
-      if (playgroundResponse.ok) {
-        const playgroundData = await playgroundResponse.json();
-        setPlaygroundProjects(playgroundData);
+      // Only load playground projects if user is authenticated
+      if (session) {
+        try {
+          const playgroundResponse = await fetch('/api/playground', {
+            headers: {
+              'Authorization': `Bearer ${session.user?.email}`,
+            },
+          });
+          if (playgroundResponse.ok) {
+            const playgroundData = await playgroundResponse.json();
+            setPlaygroundProjects(playgroundData);
+          }
+        } catch (error) {
+          console.error('Error loading playground data:', error);
+          // Set empty array if authentication fails
+          setPlaygroundProjects([]);
+        }
+      } else {
+        setPlaygroundProjects([]);
       }
     } catch (error) {
       console.error('Error loading navigation data:', error);
@@ -162,33 +179,59 @@ const slugify = (text: string): string => {
         <DropdownMenu key={link.href}>
           <DropdownMenuTrigger className="flex items-center text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
             {link.label}
-            <ChevronDown className="ml-1 h-3 w-3" />
+            {!session && <Lock className="ml-1 h-3 w-3" />}
+            {session && <ChevronDown className="ml-1 h-3 w-3" />}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-64">
-            <DropdownMenuItem asChild>
-              <Link href="/playground" className="w-full">
-                View All Projects
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <div className="grid grid-cols-2 gap-1 p-1">
-              {playgroundProjects.slice(0, 4).map((project) => (
-                <DropdownMenuItem key={project.slug} asChild className="p-2">
-                  <Link href={`/playground/${project.slug}`} className="w-full flex items-center gap-2 text-sm">
-                    <span className="text-lg">{project.emoji}</span>
-                    <span className="truncate">{project.title}</span>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </div>
-            {playgroundProjects.length > 4 && (
+            {!session ? (
               <>
+                <div className="p-3 text-center text-sm text-muted-foreground">
+                  <Lock className="mx-auto mb-2 h-6 w-6" />
+                  <p>Sign in to access playground projects</p>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/playground" className="w-full text-muted-foreground">
-                    View More Playground...
+                  <Link href="/auth/signin" className="w-full">
+                    Sign In to Continue
                   </Link>
                 </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href="/playground" className="w-full">
+                    View All Projects
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {playgroundProjects.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-1 p-1">
+                      {playgroundProjects.slice(0, 4).map((project) => (
+                        <DropdownMenuItem key={project.slug} asChild className="p-2">
+                          <Link href={`/playground/${project.slug}`} className="w-full flex items-center gap-2 text-sm">
+                            <span className="text-lg">{project.emoji}</span>
+                            <span className="truncate">{project.title}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                    {playgroundProjects.length > 4 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/playground" className="w-full text-muted-foreground">
+                            View More Playground...
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-3 text-center text-sm text-muted-foreground">
+                    <p>No playground projects yet</p>
+                  </div>
+                )}
               </>
             )}
           </DropdownMenuContent>

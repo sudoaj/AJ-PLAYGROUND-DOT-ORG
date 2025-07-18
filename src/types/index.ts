@@ -48,4 +48,5 @@ export interface PlaygroundProject {
     name: string;
     email: string;
   };
+  isOwner?: boolean;
 }

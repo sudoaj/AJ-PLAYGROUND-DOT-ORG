@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PlaygroundProject } from '@/types';
-import { Clock, ExternalLink, Eye } from 'lucide-react';
+import { Clock, ExternalLink, Eye, Crown, User } from 'lucide-react';
 import Link from 'next/link';
 import ComingSoonAnimation from './ComingSoonAnimation';
 
@@ -23,6 +23,12 @@ export default function PlaygroundCard({ project, showInteractButton = false, vi
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <CardTitle className="text-xl">{project.title}</CardTitle>
+                  {project.isOwner && (
+                    <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-800">
+                      <Crown className="w-3 h-3 mr-1" />
+                      My Project
+                    </Badge>
+                  )}
                   <Badge variant={project.isLive ? "default" : project.isAbandoned ? "destructive" : "secondary"}>
                     {project.isLive ? "Live" : project.isAbandoned ? "Abandoned" : "Coming Soon"}
                   </Badge>
@@ -87,6 +93,12 @@ export default function PlaygroundCard({ project, showInteractButton = false, vi
             <span className="text-2xl">{project.emoji}</span>
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg">{project.title}</CardTitle>
+              {project.isOwner && (
+                <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-800">
+                  <Crown className="w-3 h-3 mr-1" />
+                  My Project
+                </Badge>
+              )}
               <Badge variant={project.isLive ? "default" : project.isAbandoned ? "destructive" : "secondary"}>
                 {project.isLive ? "Live" : project.isAbandoned ? "Abandoned" : "Coming Soon"}
               </Badge>

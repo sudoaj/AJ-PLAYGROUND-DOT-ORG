@@ -1,7 +1,7 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import PlaygroundCard from '@/components/ui/PlaygroundCard';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,9 @@ import {
   Clock,
   Tag,
   SortAsc,
-  SortDesc
+  SortDesc,
+  Lock,
+  User
 } from 'lucide-react';
 import { PlaygroundProject } from '@/types';
 
@@ -49,6 +51,8 @@ const statusColors = {
 };
 
 export default function PlaygroundPage() {
+  // All hooks must be called at the top level, before any conditional returns
+  const { data: session, status } = useSession();
   const [allPlaygroundProjects, setAllPlaygroundProjects] = useState<PlaygroundProject[]>([]);
   const [projects, setProjects] = useState<PlaygroundProject[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<PlaygroundProject[]>([]);
@@ -62,15 +66,63 @@ export default function PlaygroundPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Effect for fetching projects - must come before conditional returns
   useEffect(() => {
     const fetchProjects = async () => {
+      if (!session) {
+        setIsLoading(false);
+        return;
+      }
+      
       try {
-        const response = await fetch('/api/playground');
+        // First, try to fetch existing projects
+        const response = await fetch('/api/playground', {
+          headers: {
+            'Authorization': `Bearer ${session.user?.email}`,
+          },
+        });
+        
         if (response.ok) {
           const data = await response.json();
-          setAllPlaygroundProjects(data);
-          setProjects(data);
-          setFilteredProjects(data);
+          
+          // If user has no projects, initialize their playground
+          if (data.length === 0) {
+            try {
+              const initResponse = await fetch('/api/user/initialize', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.user?.email}`,
+                },
+              });
+              
+              if (initResponse.ok) {
+                // Fetch projects again after initialization
+                const newResponse = await fetch('/api/playground', {
+                  headers: {
+                    'Authorization': `Bearer ${session.user?.email}`,
+                  },
+                });
+                
+                if (newResponse.ok) {
+                  const newData = await newResponse.json();
+                  setAllPlaygroundProjects(newData);
+                  setProjects(newData);
+                  setFilteredProjects(newData);
+                }
+              }
+            } catch (initError) {
+              console.error('Error initializing user playground:', initError);
+              // Still set empty data if initialization fails
+              setAllPlaygroundProjects(data);
+              setProjects(data);
+              setFilteredProjects(data);
+            }
+          } else {
+            setAllPlaygroundProjects(data);
+            setProjects(data);
+            setFilteredProjects(data);
+          }
         }
       } catch (error) {
         console.error('Error fetching playground projects:', error);
@@ -80,8 +132,9 @@ export default function PlaygroundPage() {
     };
 
     fetchProjects();
-  }, []);
+  }, [session]);
 
+  // Effect for filtering projects - must come before conditional returns
   useEffect(() => {
     let filtered = [...projects];
 
@@ -101,7 +154,10 @@ export default function PlaygroundPage() {
 
     // Status filter
     if (selectedStatus !== 'all') {
-      filtered = filtered.filter(project => getStatusFromProject(project) === selectedStatus);
+      filtered = filtered.filter(project => {
+        const status = getStatusFromProject(project);
+        return status === selectedStatus;
+      });
     }
 
     // Sort
@@ -113,15 +169,12 @@ export default function PlaygroundPage() {
           aValue = a.title.toLowerCase();
           bValue = b.title.toLowerCase();
           break;
-        case 'status':
-          aValue = getStatusFromProject(a);
-          bValue = getStatusFromProject(b);
-          break;
         case 'category':
           aValue = a.category.toLowerCase();
           bValue = b.category.toLowerCase();
           break;
         default:
+          // Default to title for now since we don't have timestamps
           aValue = a.title.toLowerCase();
           bValue = b.title.toLowerCase();
       }
@@ -134,180 +187,247 @@ export default function PlaygroundPage() {
     });
 
     setFilteredProjects(filtered);
-  }, [projects, searchTerm, selectedCategory, selectedStatus, sortBy, sortOrder]);
+  }, [projects, searchTerm, selectedCategory, selectedStatus, selectedDifficulty, sortBy, sortOrder]);
 
-  const liveProjects = filteredProjects.filter(p => p.isLive && !p.isAbandoned);
-  const abandonedProjects = filteredProjects.filter(p => p.isAbandoned);
-  const comingSoonProjects = filteredProjects.filter(p => !p.isLive && !p.isAbandoned);
+  // Now we can do conditional returns after all hooks are called
+  if (status === "loading") {
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-pulse flex items-center gap-2">
+            <Clock className="w-6 h-6 animate-spin" />
+            Loading...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const ProjectGrid = ({ projects }: { projects: PlaygroundProject[] }) => (
-    <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-      {projects.map((project) => (
-        <PlaygroundCard key={project.id} project={project} viewMode={viewMode} />
-      ))}
-    </div>
-  );
+  if (!session) {
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6">
+          <div className="text-center space-y-4">
+            <Lock className="w-16 h-16 mx-auto text-muted-foreground" />
+            <h1 className="text-3xl font-bold">Authentication Required</h1>
+            <p className="text-lg text-muted-foreground max-w-md">
+              Please sign in to access the playground and start building amazing projects!
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <Button asChild size="lg">
+              <Link href="/auth/signin">
+                <User className="w-4 h-4 mr-2" />
+                Sign In
+              </Link>
+            </Button>
+            <Button variant="outline" asChild size="lg">
+              <Link href="/">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-pulse flex items-center gap-2">
+            <Clock className="w-6 h-6 animate-spin" />
+            Loading your playground...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-background to-pink-50 dark:from-purple-950/20 dark:via-background dark:to-pink-950/20">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </Link>
-            <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-              {filteredProjects.length} Projects
-            </Badge>
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-            Playground
-          </h1>
-          <p className="text-muted-foreground">
-            Explore interactive projects, tools, and experiments
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Playground</h1>
+          <p className="text-lg text-muted-foreground">
+            Interactive projects and experiments. Build, learn, and have fun!
           </p>
         </div>
+        <Button asChild variant="outline">
+          <Link href="/">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+        </Button>
+      </div>
 
-        {/* Search and Filters */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Search & Filter
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-xs font-medium uppercase tracking-wide">
+              Total Projects
+            </CardDescription>
+            <CardTitle className="text-2xl font-bold">
+              {allPlaygroundProjects.length}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search projects, tags, or descriptions..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              {/* Filters Row */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="live">Live</SelectItem>
-                    <SelectItem value="abandoned">Abandoned</SelectItem>
-                    <SelectItem value="coming-soon">Coming Soon</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="title">Title</SelectItem>
-                    <SelectItem value="status">Status</SelectItem>
-                    <SelectItem value="category">Category</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* View Controls */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={sortOrder === 'asc' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSortOrder('asc')}
-                  >
-                    <SortAsc className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={sortOrder === 'desc' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSortOrder('desc')}
-                  >
-                    <SortDesc className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
         </Card>
-
-        {/* Projects Display */}
-        <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">All ({filteredProjects.length})</TabsTrigger>
-            <TabsTrigger value="live">Live ({liveProjects.length})</TabsTrigger>
-            <TabsTrigger value="abandoned">Abandoned ({abandonedProjects.length})</TabsTrigger>
-            <TabsTrigger value="coming-soon">Coming Soon ({comingSoonProjects.length})</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="space-y-6">
-            <ProjectGrid projects={filteredProjects} />
-          </TabsContent>
-
-          <TabsContent value="live" className="space-y-6">
-            <ProjectGrid projects={liveProjects} />
-          </TabsContent>
-
-          <TabsContent value="abandoned" className="space-y-6">
-            <ProjectGrid projects={abandonedProjects} />
-          </TabsContent>
-
-          <TabsContent value="coming-soon" className="space-y-6">
-            <ProjectGrid projects={comingSoonProjects} />
-          </TabsContent>
-        </Tabs>
-
-        {/* Empty State */}
-        {filteredProjects.length === 0 && (
-          <Card className="text-center py-12">
-            <CardContent>
-              <div className="text-muted-foreground">
-                <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">No projects found</h3>
-                <p>Try adjusting your search or filters to find what you're looking for.</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-xs font-medium uppercase tracking-wide">
+              Live Projects
+            </CardDescription>
+            <CardTitle className="text-2xl font-bold text-green-600">
+              {allPlaygroundProjects.filter(p => p.isLive && !p.isAbandoned).length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-xs font-medium uppercase tracking-wide">
+              Coming Soon
+            </CardDescription>
+            <CardTitle className="text-2xl font-bold text-blue-600">
+              {allPlaygroundProjects.filter(p => !p.isLive && !p.isAbandoned).length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-xs font-medium uppercase tracking-wide">
+              My Projects
+            </CardDescription>
+            <CardTitle className="text-2xl font-bold text-purple-600">
+              {allPlaygroundProjects.filter(p => p.isOwner).length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
       </div>
+
+      {/* Controls */}
+      <div className="flex flex-col lg:flex-row gap-4 mb-8">
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            placeholder="Search projects..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="live">Live</SelectItem>
+              <SelectItem value="coming-soon">Coming Soon</SelectItem>
+              <SelectItem value="abandoned">Abandoned</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="featured">Featured</SelectItem>
+              <SelectItem value="title">Title</SelectItem>
+              <SelectItem value="category">Category</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="w-full sm:w-auto"
+          >
+            {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+          </Button>
+
+          <div className="flex border rounded-md">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="rounded-r-none"
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="rounded-l-none"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Results */}
+      {filteredProjects.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
+            <Search className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">No projects found</h3>
+          <p className="text-muted-foreground mb-4">
+            {searchTerm || selectedCategory !== 'all' || selectedStatus !== 'all'
+              ? 'Try adjusting your search or filters'
+              : 'Get started by exploring our playground projects!'}
+          </p>
+          {searchTerm || selectedCategory !== 'all' || selectedStatus !== 'all' ? (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('all');
+                setSelectedStatus('all');
+              }}
+            >
+              Clear Filters
+            </Button>
+          ) : null}
+        </div>
+      ) : (
+        <div className={viewMode === 'grid' 
+          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+          : "space-y-4"
+        }>
+          {filteredProjects.map((project) => (
+            <PlaygroundCard 
+              key={project.id} 
+              project={project} 
+              viewMode={viewMode}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

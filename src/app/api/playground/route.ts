@@ -5,9 +5,40 @@ import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if user is admin
+    const isAdmin = session.user.email === "admin@ajplayground.com" || session.user.email === "admin2@ajplayground.com";
+
+    // Fetch projects based on user role
     const projects = await prisma.playgroundProject.findMany({
+      where: isAdmin ? {} : {
+        OR: [
+          { authorId: user.id }, // User's own projects
+          { isLive: true }, // Public live projects
+        ],
+      },
       include: {
         author: {
           select: {
@@ -35,6 +66,7 @@ export async function GET() {
       component: project.content, // Map content to component for frontend
       createdAt: project.createdAt.toISOString(),
       updatedAt: project.updatedAt.toISOString(),
+      isOwner: project.authorId === user.id, // Add owner flag
     }));
 
     return NextResponse.json(formattedProjects);
